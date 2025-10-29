@@ -37,7 +37,7 @@
             width: 150px; /* 减小心形尺寸以适应移动设备 */
             height: 135px;
             margin: 0 auto 20px;
-            animation: heartbeat 1.5s infiite;
+            animation: heartbeat 1.5s infinite;
         }
 
         .heart:before,
@@ -184,6 +184,55 @@
         @keyframes fall {
             to {
                 transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        /* 气泡上升效果 */
+        .bubbles-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .bubble {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            bottom: -100px;
+            animation: rise linear infinite;
+        }
+
+        @keyframes rise {
+            to {
+                transform: translateY(-110vh) rotate(10deg);
+            }
+        }
+
+        /* 云朵漂浮效果 */
+        .clouds-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .cloud {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.6);
+            border-radius: 50%;
+            animation: float-cloud linear infinite;
+        }
+
+        @keyframes float-cloud {
+            to {
+                transform: translateX(100vw);
             }
         }
 
@@ -436,6 +485,8 @@
 <body>
     <div class="stars-bg" id="starsBackground"></div>
     <div class="ribbons-bg" id="ribbonsBackground"></div>
+    <div class="bubbles-bg" id="bubblesBackground"></div>
+    <div class="clouds-bg" id="cloudsBackground"></div>
     <div class="hearts-bg" id="heartsBackground"></div>
     
     <div class="container">
@@ -585,6 +636,94 @@
                     ribbon.remove();
                 }, 10000);
             }, 200);
+        }
+
+        // 创建上升的气泡背景
+        function createBubbles() {
+            const bubblesContainer = document.getElementById('bubblesBackground');
+            const bubbleColors = [
+                'rgba(255, 102, 163, 0.3)',
+                'rgba(102, 163, 255, 0.3)',
+                'rgba(163, 102, 255, 0.3)',
+                'rgba(255, 153, 102, 0.3)',
+                'rgba(102, 204, 153, 0.3)'
+            ];
+            
+            setInterval(() => {
+                const bubble = document.createElement('div');
+                bubble.className = 'bubble';
+                
+                // 随机颜色、大小、位置和动画
+                bubble.style.backgroundColor = bubbleColors[Math.floor(Math.random() * bubbleColors.length)];
+                bubble.style.width = (Math.random() * 40 + 10) + 'px';
+                bubble.style.height = bubble.style.width;
+                bubble.style.left = Math.random() * 100 + 'vw';
+                bubble.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                bubble.style.opacity = Math.random() * 0.4 + 0.1;
+                
+                bubblesContainer.appendChild(bubble);
+                
+                // 移除已经上升的气泡
+                setTimeout(() => {
+                    bubble.remove();
+                }, 20000);
+            }, 500);
+        }
+
+        // 创建漂浮的云朵背景
+        function createClouds() {
+            const cloudsContainer = document.getElementById('cloudsBackground');
+            
+            setInterval(() => {
+                const cloud = document.createElement('div');
+                cloud.className = 'cloud';
+                
+                // 随机大小、位置和动画
+                const size = Math.random() * 30 + 20;
+                cloud.style.width = size + 'px';
+                cloud.style.height = size / 2 + 'px';
+                cloud.style.top = Math.random() * 100 + 'vh';
+                cloud.style.left = '-50px';
+                cloud.style.animationDuration = (Math.random() * 20 + 20) + 's';
+                cloud.style.opacity = Math.random() * 0.3 + 0.1;
+                
+                // 创建云朵的组成部分
+                const part1 = document.createElement('div');
+                part1.style.position = 'absolute';
+                part1.style.width = size + 'px';
+                part1.style.height = size + 'px';
+                part1.style.borderRadius = '50%';
+                part1.style.background = 'rgba(255, 255, 255, 0.6)';
+                
+                const part2 = document.createElement('div');
+                part2.style.position = 'absolute';
+                part2.style.width = size * 0.8 + 'px';
+                part2.style.height = size * 0.8 + 'px';
+                part2.style.borderRadius = '50%';
+                part2.style.background = 'rgba(255, 255, 255, 0.6)';
+                part2.style.top = -size * 0.3 + 'px';
+                part2.style.left = size * 0.2 + 'px';
+                
+                const part3 = document.createElement('div');
+                part3.style.position = 'absolute';
+                part3.style.width = size * 0.6 + 'px';
+                part3.style.height = size * 0.6 + 'px';
+                part3.style.borderRadius = '50%';
+                part3.style.background = 'rgba(255, 255, 255, 0.6)';
+                part3.style.top = -size * 0.1 + 'px';
+                part3.style.left = size * 0.5 + 'px';
+                
+                cloud.appendChild(part1);
+                cloud.appendChild(part2);
+                cloud.appendChild(part3);
+                
+                cloudsContainer.appendChild(cloud);
+                
+                // 移除已经漂浮的云朵
+                setTimeout(() => {
+                    cloud.remove();
+                }, 45000);
+            }, 3000);
         }
 
         // 创建跟随鼠标的粒子效果
@@ -844,6 +983,8 @@
             generateShareLink();
             createStars(); // 创建星星背景
             createRibbons(); // 创建彩带背景
+            createBubbles(); // 创建气泡背景
+            createClouds(); // 创建云朵背景
             
             // 尝试自动播放音乐（大多数浏览器会阻止）
             const music = document.getElementById('backgroundMusic');
