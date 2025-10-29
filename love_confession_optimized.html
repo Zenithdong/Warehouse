@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>爱心表白</title>
+    <link href="https://fonts.googleapis.com/css2?family=Zhi+Mang+Xing&family=Noto+Serif+SC:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: #ffe6f2; /* 默认背景色 */
+            font-family: 'Noto Serif SC', 'Arial', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: background-color 1s ease; /* 背景颜色过渡效果 */
+            cursor: pointer; /* 显示点击手势 */
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+            z-index: 2;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.85); /* 半透明白色背景 */
+            border-radius: 20px; /* 圆角 */
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); /* 更柔和的阴影 */
+            backdrop-filter: blur(10px); /* 毛玻璃效果 */
+            max-width: 90%; /* 限制最大宽度 */
+        }
+
+        .heart {
+            position: relative;
+            width: 150px; /* 减小心形尺寸以适应移动设备 */
+            height: 135px;
+            margin: 0 auto 20px;
+            animation: heartbeat 1.5s infiite;
+        }
+
+        .heart:before,
+        .heart:after {
+            content: "";
+            position: absolute;
+            width: 75px;
+            height: 120px;
+            background: var(--heart-color, #ff66a3);
+            border-radius: 100px 100px 0 0;
+        }
+
+        .heart:before {
+            left: 75px;
+            transform: rotate(-45deg);
+            transform-origin: 0 100%;
+        }
+
+        .heart:after {
+            right: 75px;
+            transform: rotate(45deg);
+            transform-origin: 100% 100%;
+        }
+
+        .message {
+            color: #d63384;
+            font-size: 24px; /* 调整字体大小 */
+            font-weight: bold;
+            margin-bottom: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.1); /* 加强阴影效果 */
+        }
+
+        .confession {
+            background: rgba(255, 255, 255, 0.9); /* 更透明白色背景 */
+            padding: 20px; /* 调整内边距 */
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        .confession p {
+            font-size: 16px; /* 调整字体大小 */
+            line-height: 1.6; /* 调整行高 */
+            color: #555;
+            margin: 10px 0; /* 调整段落间距 */
+        }
+
+        .signature {
+            margin-top: 20px;
+            font-style: italic;
+            color: #ff66a3;
+            font-size: 18px; /* 调整签名字体大小 */
+        }
+
+        @keyframes heartbeat {
+            0% { transform: scale(1); }
+            10% { transform: scale(1.05); }
+            20% { transform: scale(1); }
+            30% { transform: scale(1.1); }
+            40% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            60% { transform: scale(1); }
+            100% { transform: scale(1); }
+        }
+
+        .hearts-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .floating-heart {
+            position: absolute;
+            color: #ff66a3;
+            font-size: 20px;
+            opacity: 0;
+            animation: float 5s infinite ease-in;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(100vh) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 0.5;
+            }
+            100% {
+                transform: translateY(-100px) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* 星星闪烁效果 */
+        .stars-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .star {
+            position: absolute;
+            background-color: white;
+            border-radius: 50%;
+            animation: twinkle var(--duration, 3s) infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.2; }
+            50% { opacity: 1; }
+        }
+
+        /* 彩带飘落效果 */
+        .ribbons-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .ribbon {
+            position: absolute;
+            width: 10px;
+            height: 30px;
+            opacity: 0.7;
+            animation: fall linear infinite;
+        }
+
+        @keyframes fall {
+            to {
+                transform: translateY(100vh) rotate(360deg);
+            }
+        }
+
+        /* 粒子效果样式 */
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+            opacity: 0;
+            z-index: 1000;
+        }
+
+        /* 链接样式 */
+        .link-container {
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 10px;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+
+        .link-text {
+            font-size: 16px;
+            color: #d63384;
+            margin-bottom: 10px;
+        }
+
+        .link-url {
+            font-size: 14px;
+            color: #666;
+            background: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            word-break: break-all;
+        }
+
+        /* 提示文字样式 */
+        .tip {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 20px;
+            font-size: 14px;
+            opacity: 0.7;
+            z-index: 100;
+        }
+
+        /* 底部功能按钮区域 */
+        .button-container {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .action-button {
+            background: linear-gradient(45deg, #ff66a3, #ff99cc);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 30px;
+            font-size: 14px;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(255, 102, 163, 0.3);
+            transition: all 0.3s ease;
+            min-width: 100px;
+        }
+
+        .action-button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 15px rgba(255, 102, 163, 0.4);
+        }
+
+        .action-button:active {
+            transform: translateY(1px);
+        }
+
+        /* 甜蜜语句弹窗样式 */
+        .sweet-message-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            z-index: 10000;
+            text-align: center;
+            max-width: 80%;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            to { opacity: 1; }
+        }
+
+        .sweet-message-popup p {
+            font-size: 24px;
+            color: #d63384;
+            margin: 0;
+            font-weight: bold;
+            font-family: 'Zhi Mang Xing', cursive;
+            line-height: 1.4;
+        }
+
+        .close-popup {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+            color: #ff66a3;
+        }
+
+        /* 烟花特效容器 */
+        .fireworks-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+                border-radius: 15px;
+            }
+            
+            .heart {
+                width: 120px;
+                height: 108px;
+            }
+            
+            .heart:before,
+            .heart:after {
+                width: 60px;
+                height: 96px;
+            }
+            
+            .heart:before {
+                left: 60px;
+            }
+            
+            .heart:after {
+                right: 60px;
+            }
+            
+            .message {
+                font-size: 20px;
+            }
+            
+            .confession {
+                padding: 15px;
+            }
+            
+            .confession p {
+                font-size: 14px;
+            }
+            
+            .signature {
+                font-size: 16px;
+            }
+            
+            .button-container {
+                gap: 8px;
+            }
+            
+            .action-button {
+                padding: 8px 12px;
+                font-size: 12px;
+                min-width: 80px;
+            }
+            
+            .sweet-message-popup {
+                padding: 15px;
+            }
+            
+            .sweet-message-popup p {
+                font-size: 16px;
+            }
+            
+            .tip {
+                font-size: 12px;
+                padding: 8px 12px;
+                bottom: 10px;
+                right: 10px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 10px;
+            }
+            
+            .heart {
+                width: 100px;
+                height: 90px;
+            }
+            
+            .heart:before,
+            .heart:after {
+                width: 50px;
+                height: 80px;
+            }
+            
+            .heart:before {
+                left: 50px;
+            }
+            
+            .heart:after {
+                right: 50px;
+            }
+            
+            .message {
+                font-size: 18px;
+            }
+            
+            .confession p {
+                font-size: 13px;
+            }
+            
+            .signature {
+                font-size: 14px;
+            }
+            
+            .action-button {
+                padding: 6px 10px;
+                font-size: 11px;
+                min-width: 70px;
+            }
+            
+            .sweet-message-popup p {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="stars-bg" id="starsBackground"></div>
+    <div class="ribbons-bg" id="ribbonsBackground"></div>
+    <div class="hearts-bg" id="heartsBackground"></div>
+    
+    <div class="container">
+        <div class="heart"></div>
+        
+        <div class="message">致我最爱的人</div>
+        
+        <div class="confession">
+            <p>从遇见你的那一刻起，我的世界就变得不一样了。</p>
+            <p>你的笑容如阳光般温暖，照亮了我心中的每一个角落。</p>
+            <p>我想对你说：姜博是刘冬生命中最美好的奇迹。</p>
+            <p>愿我们携手走过每一个春夏秋冬，直到永远。</p>
+            
+            <div class="signature">—— 永远爱你的人</div>
+        </div>
+
+        <div class="link-container">
+            <div class="link-text">分享这个表白页面：</div>
+            <div class="link-url" id="shareLink">正在生成链接...</div>
+        </div>
+    </div>
+
+    <!-- 底部功能按钮 -->
+    <div class="button-container">
+        <button class="action-button" id="playMusicBtn">🎵 播放音乐</button>
+        <button class="action-button" id="changeHeartBtn">❤️ 切换心形</button>
+        <button class="action-button" id="showConfessionBtn">💌 表白弹窗</button>
+    </div>
+
+    <!-- 甜蜜语句弹窗 -->
+    <div class="sweet-message-popup" id="sweetMessagePopup" style="display: none;">
+        <span class="close-popup" id="closePopup">&times;</span>
+        <p id="sweetMessageText">我喜欢你！</p>
+    </div>
+
+    <!-- 烟花特效容器 -->
+    <div class="fireworks-container" id="fireworksContainer"></div>
+
+    <!-- 音频元素 -->
+    <audio id="backgroundMusic" loop>
+        <source src="https://music.163.com/song/media/outer/url?id=139774.mp3" type="audio/mpeg">
+        您的浏览器不支持音频元素。
+    </audio>
+
+    <!-- 提示文字 -->
+    <div class="tip">点击页面任意位置切换背景颜色</div>
+
+    <script>
+        // 定义淡色系背景颜色数组
+        const backgroundColors = [
+            '#ffe6f2', // 淡粉色
+            '#e6f2ff', // 淡蓝色
+            '#f2e6ff', // 浅紫色
+            '#fff2e6', // 淡橙色
+            '#e6fff2', // 淡绿色
+            '#fff8e6', // 淡黄色
+            '#f2e6ff', // 浅紫色
+            '#e6f7ff'  // 淡青色
+        ];
+
+        // 对应背景颜色的粒子颜色数组
+        const particleColors = [
+            ['#ff66a3', '#ff99cc', '#ff6699', '#ff3399', '#ff0066'], // 淡粉色对应的粒子颜色
+            ['#66a3ff', '#99ccff', '#6699ff', '#3399ff', '#0066ff'], // 淡蓝色对应的粒子颜色
+            ['#a366ff', '#cc99ff', '#9966ff', '#9933ff', '#6600ff'], // 浅紫色对应的粒子颜色
+            ['#ff9966', '#ffcc99', '#ff9933', '#ff6600', '#cc6600'], // 淡橙色对应的粒子颜色
+            ['#66cc99', '#99ffcc', '#66cc66', '#33cc99', '#009966'], // 淡绿色对应的粒子颜色
+            ['#ffcc66', '#ffdd99', '#ffcc33', '#ff9900', '#cc9900'], // 淡黄色对应的粒子颜色
+            ['#a366ff', '#cc99ff', '#9966ff', '#9933ff', '#6600ff'], // 浅紫色对应的粒子颜色
+            ['#66cccc', '#99dddd', '#66cccc', '#33bbbb', '#009999']  // 淡青色对应的粒子颜色
+        ];
+
+        let currentColorIndex = 0;
+
+        // 自动切换背景颜色（每10秒切换一次）
+        setInterval(() => {
+            currentColorIndex = (currentColorIndex + 1) % backgroundColors.length;
+            document.body.style.background = backgroundColors[currentColorIndex];
+        }, 10000);
+
+        // 创建漂浮的心形背景
+        function createFloatingHearts() {
+            const heartsContainer = document.getElementById('heartsBackground');
+            const heartSymbols = ['❤', '💖', '💗', '💓', '💕', '💘', '💝'];
+            
+            setInterval(() => {
+                const heart = document.createElement('div');
+                heart.className = 'floating-heart';
+                heart.innerHTML = heartSymbols[Math.floor(Math.random() * heartSymbols.length)];
+                
+                // 随机位置和大小
+                heart.style.left = Math.random() * 100 + 'vw';
+                heart.style.fontSize = (Math.random() * 20 + 10) + 'px';
+                heart.style.animationDuration = (Math.random() * 3 + 2) + 's';
+                heart.style.opacity = Math.random() * 0.5 + 0.3;
+                
+                heartsContainer.appendChild(heart);
+                
+                // 移除已经飘走的心
+                setTimeout(() => {
+                    heart.remove();
+                }, 5000);
+            }, 300);
+        }
+
+        // 创建闪烁的星星背景
+        function createStars() {
+            const starsContainer = document.getElementById('starsBackground');
+            
+            // 创建50颗星星
+            for (let i = 0; i < 50; i++) {
+                const star = document.createElement('div');
+                star.className = 'star';
+                
+                // 随机位置、大小和动画延迟
+                star.style.left = Math.random() * 100 + 'vw';
+                star.style.top = Math.random() * 100 + 'vh';
+                star.style.width = (Math.random() * 3 + 1) + 'px';
+                star.style.height = star.style.width;
+                star.style.setProperty('--duration', (Math.random() * 3 + 2) + 's');
+                star.style.animationDelay = (Math.random() * 5) + 's';
+                
+                starsContainer.appendChild(star);
+            }
+        }
+
+        // 创建飘落的彩带背景
+        function createRibbons() {
+            const ribbonsContainer = document.getElementById('ribbonsBackground');
+            const ribbonColors = ['#ff66a3', '#66a3ff', '#a366ff', '#ff9966', '#66cc99'];
+            
+            setInterval(() => {
+                const ribbon = document.createElement('div');
+                ribbon.className = 'ribbon';
+                
+                // 随机颜色、位置和动画
+                ribbon.style.backgroundColor = ribbonColors[Math.floor(Math.random() * ribbonColors.length)];
+                ribbon.style.left = Math.random() * 100 + 'vw';
+                ribbon.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                ribbon.style.opacity = Math.random() * 0.5 + 0.3;
+                ribbon.style.transform = `rotate(${Math.random() * 360}deg)`;
+                
+                ribbonsContainer.appendChild(ribbon);
+                
+                // 移除已经飘落的彩带
+                setTimeout(() => {
+                    ribbon.remove();
+                }, 10000);
+            }, 200);
+        }
+
+        // 创建跟随鼠标的粒子效果
+        function createParticleEffect() {
+            let particles = [];
+            
+            document.addEventListener('mousemove', (e) => {
+                // 获取当前背景对应的粒子颜色
+                const colors = particleColors[currentColorIndex];
+                
+                // 创建新粒子
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = e.pageX + 'px';
+                particle.style.top = e.pageY + 'px';
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.opacity = '1';
+                
+                document.body.appendChild(particle);
+                
+                // 添加到粒子数组
+                particles.push({
+                    element: particle,
+                    x: e.pageX,
+                    y: e.pageY,
+                    size: Math.random() * 5 + 2,
+                    speedX: Math.random() * 4 - 2,
+                    speedY: Math.random() * 4 - 2,
+                    life: 100
+                });
+                
+                // 限制粒子数量
+                if (particles.length > 100) {
+                    const oldParticle = particles.shift();
+                    if (oldParticle.element.parentNode) {
+                        oldParticle.element.parentNode.removeChild(oldParticle.element);
+                    }
+                }
+            });
+            
+            // 动画循环
+            function animateParticles() {
+                for (let i = 0; i < particles.length; i++) {
+                    const p = particles[i];
+                    
+                    // 更新位置
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    p.life -= 1;
+                    
+                    // 更新样式
+                    p.element.style.left = p.x + 'px';
+                    p.element.style.top = p.y + 'px';
+                    p.element.style.opacity = p.life / 100;
+                    p.element.style.transform = `scale(${p.life / 100})`;
+                    
+                    // 移除死亡粒子
+                    if (p.life <= 0) {
+                        if (p.element.parentNode) {
+                            p.element.parentNode.removeChild(p.element);
+                        }
+                        particles.splice(i, 1);
+                        i--;
+                    }
+                }
+                
+                requestAnimationFrame(animateParticles);
+            }
+            
+            animateParticles();
+        }
+
+        // 创建烟花特效
+        function createFireworks(x, y) {
+            const container = document.getElementById('fireworksContainer');
+            const colors = particleColors[currentColorIndex]; // 使用当前背景对应的粒子颜色
+            
+            // 创建多个烟花粒子
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = x + 'px';
+                particle.style.top = y + 'px';
+                particle.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                particle.style.opacity = '1';
+                particle.style.width = '4px';
+                particle.style.height = '4px';
+                
+                container.appendChild(particle);
+                
+                // 随机运动方向和速度
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 2;
+                const vx = Math.cos(angle) * speed;
+                const vy = Math.sin(angle) * speed;
+                
+                // 动画效果
+                let posX = x;
+                let posY = y;
+                let life = 100;
+                let gravity = 0.05;
+                let vyGravity = vy;
+                
+                function animate() {
+                    life -= 1;
+                    if (life <= 0) {
+                        particle.remove();
+                        return;
+                    }
+                    
+                    posX += vx;
+                    vyGravity += gravity;
+                    posY += vyGravity;
+                    
+                    particle.style.left = posX + 'px';
+                    particle.style.top = posY + 'px';
+                    particle.style.opacity = life / 100;
+                    particle.style.transform = `scale(${life / 100})`;
+                    
+                    requestAnimationFrame(animate);
+                }
+                
+                animate();
+            }
+        }
+
+        // 生成分享链接
+        function generateShareLink() {
+            // 在实际部署时，这里应该是实际的URL
+            const shareLink = window.location.href;
+            document.getElementById('shareLink').textContent = shareLink || '请将此文件部署到服务器获取链接';
+        }
+
+        // 添加甜蜜语句数组
+        const sweetMessages = [
+            "遇见你之前，我没想过结婚。遇见你之后，我没想过别人。你是我的唯一，我的宝贝，我的挚爱。",
+            "我想和你一起慢慢变老，看遍世间所有的风景，走过春夏秋冬的每一个季节，直到白发苍苍。",
+            "你的笑容是我每天最好的动力，你的温柔是我心中最温暖的港湾，你的爱是我生命中最珍贵的礼物。",
+            "爱你，是我做过最好的事。陪伴你，是我最幸福的选择。守护你，是我此生不变的承诺。",
+            "愿得一人心，白首不相离。愿我们携手走过人生的每一个阶段，分享每一份喜悦与忧愁。",
+            "我想和你一起看遍世间的美景，走过山川湖海，踏遍天涯海角，只要有你在身边就足够了。",
+            "你是我心中最亮的那颗星，指引着我前进的方向。有你在身边，每一天都是情人节，每一刻都充满甜蜜。",
+            "我愿意用一生的时间来宠爱你，呵护你，陪伴你。你是我今生唯一的挚爱，我的心中只有你。",
+            "从遇见你的那一刻起，我的世界就变得不一样了。你的出现让我的生活充满了色彩和希望。",
+            "你的笑容如阳光般温暖，照亮了我心中的每一个角落。你的爱如甘露般滋润，滋养着我干涸的心田。",
+            "我想对你说：姜博是刘冬生命中最美好的奇迹。愿我们的爱情如美酒般越陈越香，如钻石般永恒闪耀。",
+            "在这个世界上，有千万种相遇，但最美的那一种，就是与你相遇。有千万种爱情，但最深的那一种，就是爱你。",
+            "我愿意成为你的依靠，在你疲惫时给你肩膀，在你迷茫时为你指引，在你孤单时陪你度过每一个夜晚。",
+            "时光荏苒，岁月如梭，但我的爱永远不会改变。无论风雨如何，我都会紧紧握住你的手，与你共度此生。",
+            "你是我生命中最美的意外，最珍贵的礼物。感谢命运让我遇见你，爱上你，陪伴你走过人生的每一段路程。"
+        ];
+
+        // 显示随机甜蜜语句弹窗
+        function showSweetMessage() {
+            const popup = document.getElementById('sweetMessagePopup');
+            const messageText = document.getElementById('sweetMessageText');
+            
+            // 随机选择一条甜蜜语句
+            const randomIndex = Math.floor(Math.random() * sweetMessages.length);
+            messageText.textContent = sweetMessages[randomIndex];
+            
+            // 显示弹窗
+            popup.style.display = 'block';
+            
+            // 3秒后自动隐藏
+            setTimeout(() => {
+                popup.style.display = 'none';
+            }, 3000);
+        }
+
+        // 关闭弹窗
+        document.getElementById('closePopup').addEventListener('click', () => {
+            document.getElementById('sweetMessagePopup').style.display = 'none';
+        });
+
+        // 添加心形样式数组
+        const heartStyles = [
+            {color: '#ff66a3', shadow: '0 0 20px #ff66a3'}, // 粉色
+            {color: '#ff9900', shadow: '0 0 20px #ff9900'}, // 橙色
+            {color: '#ff3399', shadow: '0 0 20px #ff3399'}, // 玫红色
+            {color: '#66ccff', shadow: '0 0 20px #66ccff'}, // 蓝色
+            {color: '#9966ff', shadow: '0 0 20px #9966ff'}  // 紫色
+        ];
+        
+        let currentHeartStyleIndex = 0;
+
+        // 切换心形样式
+        function changeHeartStyle() {
+            currentHeartStyleIndex = (currentHeartStyleIndex + 1) % heartStyles.length;
+            const heart = document.querySelector('.heart');
+            const style = heartStyles[currentHeartStyleIndex];
+            
+            // 修改心形颜色
+            heart.style.filter = `drop-shadow(${style.shadow})`;
+            
+            // 使用CSS变量来动态改变颜色
+            document.documentElement.style.setProperty('--heart-color', style.color);
+        }
+
+        // 初始化心形样式
+        document.documentElement.style.setProperty('--heart-color', heartStyles[0].color);
+
+        // 页面点击事件（创建烟花和切换背景）
+        document.body.addEventListener('click', function(e) {
+            // 检查点击的元素是否在按钮区域
+            if (!e.target.closest('.button-container') && 
+                e.target.id !== 'playMusicBtn' && 
+                e.target.id !== 'changeHeartBtn' && 
+                e.target.id !== 'showConfessionBtn') {
+                // 切换背景颜色
+                currentColorIndex = (currentColorIndex + 1) % backgroundColors.length;
+                document.body.style.background = backgroundColors[currentColorIndex];
+                
+                // 创建烟花特效
+                createFireworks(e.clientX, e.clientY);
+            }
+        });
+
+        // 触摸事件（移动端支持）
+        document.body.addEventListener('touchstart', function(e) {
+            if (e.touches.length > 0) {
+                const touch = e.touches[0];
+                
+                // 切换背景颜色
+                currentColorIndex = (currentColorIndex + 1) % backgroundColors.length;
+                document.body.style.background = backgroundColors[currentColorIndex];
+                
+                // 创建烟花特效
+                createFireworks(touch.clientX, touch.clientY);
+            }
+        });
+
+        // 绑定按钮事件
+        document.getElementById('showConfessionBtn').addEventListener('click', showSweetMessage);
+        document.getElementById('changeHeartBtn').addEventListener('click', changeHeartStyle);
+        document.getElementById('playMusicBtn').addEventListener('click', function() {
+            const music = document.getElementById('backgroundMusic');
+            const button = document.getElementById('playMusicBtn');
+            
+            if (music.paused) {
+                music.play().then(() => {
+                    button.innerHTML = '⏸️ 暂停音乐';
+                }).catch(e => {
+                    alert('音乐播放失败，请检查网络连接或尝试其他浏览器');
+                    console.error('音乐播放失败:', e);
+                });
+            } else {
+                music.pause();
+                button.innerHTML = '🎵 播放音乐';
+            }
+        });
+
+        // 页面加载完成后执行
+        window.addEventListener('load', () => {
+            createFloatingHearts();
+            createParticleEffect();
+            generateShareLink();
+            createStars(); // 创建星星背景
+            createRibbons(); // 创建彩带背景
+            
+            // 尝试自动播放音乐（大多数浏览器会阻止）
+            const music = document.getElementById('backgroundMusic');
+            music.volume = 0.3; // 设置音量为30%
+        });
+    </script>
+</body>
+</html>
