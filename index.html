@@ -2,42 +2,34 @@
 <html lang="zh-CN">
 <head>
   <meta charset="UTF-8" />
-  <title>冬天给予温暖 · Winter Glow React Ultimate</title>
+  <title>冬天给予温暖 · Winter Glow 2.0</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-  <!-- React 18 UMD + Babel -->
+  <!-- React / ReactDOM / Babel（在 GitHub Pages 直接用） -->
   <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script crossorigin src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <!-- Three.js -->
+  <!-- Three.js 用于 3D 粒子球 -->
   <script src="https://unpkg.com/three@0.158.0/build/three.min.js"></script>
 
   <style>
     :root {
-      --bg-night-cold-1: #020617;
-      --bg-night-cold-2: #0b1120;
-      --bg-night-warm-1: #111827;
-      --bg-night-warm-2: #7c2d12;
-
-      --bg-snow-cold-1: #0f172a;
-      --bg-snow-cold-2: #1f2937;
-      --bg-snow-warm-1: #111827;
-      --bg-snow-warm-2: #7c2d12;
-
-      --bg-dusk-cold-1: #1e1b4b;
-      --bg-dusk-cold-2: #7c2d12;
-      --bg-dusk-warm-1: #7c2d12;
-      --bg-dusk-warm-2: #b45309;
+      --bg-night-1: #020617;
+      --bg-night-2: #0b1120;
+      --bg-snow-1: #0f172a;
+      --bg-snow-2: #1e293b;
+      --bg-dusk-1: #1e1b4b;
+      --bg-dusk-2: #7c2d12;
 
       --txt-main: #e5e7eb;
       --txt-sub: #9ca3af;
 
-      --warm: #fb923c;
-      --warm-soft: #fed7aa;
-      --cold: #60a5fa;
-      --cold-soft: #bfdbfe;
+      --accent-warm: #fb923c;
+      --accent-warm-soft: #fed7aa;
+      --accent-cold: #60a5fa;
+      --accent-cold-soft: #bfdbfe;
 
-      --glass-bg: rgba(15, 23, 42, 0.6);
+      --glass-bg: rgba(15, 23, 42, 0.78);
       --glass-border: rgba(148, 163, 184, 0.7);
     }
 
@@ -45,82 +37,34 @@
 
     html, body {
       height: 100%;
-    }
-
-    body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
       background: radial-gradient(circle at top, #0b1120, #020617);
       color: var(--txt-main);
-      cursor: none;
-      overflow-x: hidden;
-      overflow-y: auto;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
+      -webkit-font-smoothing: antialiased;
     }
 
-    #root { height: 100%; }
+    body { overflow-x: hidden; }
 
-    /* 光标光晕 */
-    .cursor-glow {
-      position: fixed;
-      width: 220px;
-      height: 220px;
-      pointer-events: none;
-      border-radius: 50%;
-      background: radial-gradient(circle, rgba(251, 146, 60, 0.55), transparent 70%);
-      mix-blend-mode: screen;
-      opacity: 0.9;
-      transform: translate3d(-9999px, -9999px, 0);
-      transition: transform 0.08s linear;
-      z-index: 9999;
-    }
+    #root { min-height: 100vh; }
 
-    /* 光标附近粒子 */
-    .cursor-particle {
-      position: fixed;
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      pointer-events: none;
-      background: radial-gradient(circle, rgba(248,250,252,0.95), transparent 60%);
-      mix-blend-mode: screen;
-      animation: cursorParticle 0.7s ease-out forwards;
-      z-index: 9998;
-    }
-
-    @keyframes cursorParticle {
-      from {
-        transform: translate3d(0, 0, 0) scale(1);
-        opacity: 1;
-      }
-      to {
-        transform: translate3d(var(--dx), var(--dy), 0) scale(0.4);
-        opacity: 0;
-      }
-    }
-
-    /* 应用整体容器 */
+    /* 主容器 */
     .app {
       position: relative;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      padding: 20px 32px 40px;
-      transition: background 0.6s ease, filter 0.3s ease;
+      padding: 16px clamp(16px, 4vw, 32px) 32px;
       overflow: hidden;
+      transition: background 0.6s ease, filter 0.4s ease;
     }
 
-    @media (max-width: 900px) {
-      .app { padding: 14px 18px 32px; }
-    }
-
-    /* 烟雾层（带视差） */
+    /* 星空背景 + 烟雾层（轻量版） */
     .smoke-layer {
-      position: absolute;
+      position: fixed;
       inset: -20%;
       pointer-events: none;
-      overflow: hidden;
       z-index: 0;
-      opacity: 0.4;
-      transition: transform 0.25s ease-out;
+      opacity: 0.45;
+      transform: translate3d(0,0,0);
+      will-change: transform;
     }
 
     .smoke-cloud {
@@ -128,25 +72,35 @@
       width: 60%;
       height: 60%;
       border-radius: 50%;
-      filter: blur(40px);
+      filter: blur(22px);
       background:
         radial-gradient(circle at 30% 30%, rgba(255,255,255,0.16), transparent 60%),
         radial-gradient(circle at 70% 60%, rgba(148, 163, 184, 0.22), transparent 65%);
-      animation: smokeMove 36s ease-in-out infinite alternate;
+      animation: smokeMove 28s ease-in-out infinite alternate;
     }
 
     .smoke-cloud.smoke-2 {
       left: 40%;
       top: 10%;
-      animation-duration: 44s;
+      animation-duration: 36s;
       animation-direction: alternate-reverse;
       opacity: 0.7;
     }
 
     @keyframes smokeMove {
-      0%   { transform: translate3d(-12%, 8%, 0) scale(1); }
-      50%  { transform: translate3d(8%, -4%, 0) scale(1.12); }
-      100% { transform: translate3d(12%, 16%, 0) scale(1.04); }
+      0%   { transform: translate3d(-8%, 6%, 0) scale(1); }
+      50%  { transform: translate3d(6%, -3%, 0) scale(1.08); }
+      100% { transform: translate3d(10%, 10%, 0) scale(1.02); }
+    }
+
+    /* Canvas 雪花 */
+    .snow-canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 1;
+      opacity: 0.9;
+      will-change: transform;
     }
 
     /* 顶栏 */
@@ -156,6 +110,7 @@
       display: flex;
       align-items: center;
       justify-content: space-between;
+      gap: 8px;
       margin-bottom: 18px;
     }
 
@@ -168,24 +123,19 @@
     .logo-mark {
       width: 28px;
       height: 28px;
-      border-radius: 11px;
-      background:
-        conic-gradient(from 220deg, #38bdf8, #fb923c, #a855f7, #38bdf8);
-      display: flex;
-      align-items: center;
-      justify-content: center;
+      border-radius: 12px;
+      background: conic-gradient(from 220deg, #38bdf8, #fb923c, #a855f7, #38bdf8);
+      box-shadow: 0 0 20px rgba(56,189,248,0.7);
       position: relative;
       overflow: hidden;
-      box-shadow: 0 0 18px rgba(59,130,246,0.7);
     }
 
     .logo-mark::after {
       content: "";
       position: absolute;
       inset: 3px;
-      border-radius: 9px;
-      background: radial-gradient(circle at 20% 0%, rgba(255,255,255,0.9), transparent 52%);
-      opacity: 0.9;
+      border-radius: inherit;
+      background: radial-gradient(circle at 20% 0%, rgba(255,255,255,0.9), transparent 60%);
     }
 
     .logo-text-main { font-size: 16px; font-weight: 600; }
@@ -193,47 +143,23 @@
 
     .top-right {
       display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
       align-items: center;
-      gap: 10px;
+      justify-content: flex-end;
+      font-size: 12px;
+      color: var(--txt-sub);
     }
 
-    .small-text { font-size: 12px; color: var(--txt-sub); }
-
-    /* 玻璃按钮 */
-    .glass-btn {
-      padding: 8px 14px;
+    .top-badge {
+      padding: 4px 10px;
       border-radius: 999px;
       border: 1px solid var(--glass-border);
-      background: var(--glass-bg);
-      backdrop-filter: blur(14px);
-      color: var(--txt-main);
-      font-size: 13px;
+      background: rgba(15,23,42,0.75);
+      backdrop-filter: blur(12px);
       display: inline-flex;
       align-items: center;
-      gap: 8px;
-      cursor: pointer;
-      transition: all 0.18s ease;
-      box-shadow:
-        0 0 0 1px rgba(15,23,42,0.6),
-        0 18px 40px rgba(15,23,42,0.9);
-    }
-
-    .glass-btn:hover {
-      transform: translateY(-1.5px);
-      box-shadow:
-        0 0 0 1px rgba(148,163,184,0.7),
-        0 22px 50px rgba(15,23,42,1);
-      background: linear-gradient(
-        135deg,
-        rgba(248,250,252,0.12),
-        rgba(15,23,42,0.9)
-      );
-    }
-
-    .glass-btn.small {
-      padding: 6px 12px;
-      font-size: 12px;
-      box-shadow: none;
+      gap: 6px;
     }
 
     .dot-live {
@@ -241,34 +167,70 @@
       height: 7px;
       border-radius: 999px;
       background: #22c55e;
-      box-shadow: 0 0 14px rgba(34,197,94, 0.9);
+      box-shadow: 0 0 10px rgba(34,197,94,0.9);
     }
 
-    /* 主内容区域（特效 hero） */
-    .content {
+    /* 玻璃按钮 */
+    .glass-btn {
+      border-radius: 999px;
+      border: 1px solid var(--glass-border);
+      background: var(--glass-bg);
+      color: var(--txt-main);
+      padding: 7px 14px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow:
+        0 0 0 1px rgba(15,23,42,0.8),
+        0 16px 36px rgba(15,23,42,0.95);
+      backdrop-filter: blur(16px);
+      transition: all 0.18s ease;
+    }
+
+    .glass-btn.small {
+      padding: 6px 10px;
+      font-size: 11px;
+      box-shadow: none;
+    }
+
+    .glass-btn:hover {
+      transform: translateY(-1px);
+      box-shadow:
+        0 0 0 1px rgba(148,163,184,0.8),
+        0 20px 48px rgba(15,23,42,1);
+      background: linear-gradient(135deg, rgba(248,250,252,0.12), rgba(15,23,42,0.9));
+    }
+
+    .glass-btn:active {
+      transform: translateY(0);
+      box-shadow: 0 0 0 1px rgba(148,163,184,0.7);
+    }
+
+    /* 上半部分：文案 + 光球 */
+    .hero {
       position: relative;
       z-index: 2;
-      display: flex;
-      gap: 32px;
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+      gap: 24px;
       align-items: center;
-      justify-content: space-between;
-      padding-bottom: 40px;
+      margin-bottom: 16px;
     }
 
-    @media (max-width: 900px) {
-      .content {
-        flex-direction: column;
+    @media (max-width: 860px) {
+      .hero {
+        grid-template-columns: minmax(0,1fr);
         align-items: flex-start;
-        justify-content: flex-start;
-        padding-top: 10px;
       }
     }
 
-    .left {
-      max-width: 520px;
+    .hero-left {
       display: flex;
       flex-direction: column;
-      gap: 18px;
+      gap: 14px;
+      max-width: 520px;
     }
 
     .tag-line {
@@ -277,10 +239,10 @@
       gap: 8px;
       padding: 4px 10px;
       border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.6);
+      border: 1px solid rgba(148,163,184,0.7);
       background: radial-gradient(circle at top left, rgba(148,163,184,0.45), rgba(15,23,42,0.9));
       font-size: 11px;
-      color: var(--cold-soft);
+      color: var(--accent-cold-soft);
     }
 
     .tag-pill {
@@ -288,65 +250,46 @@
       border-radius: 999px;
       border: 1px solid rgba(148,163,184,0.7);
       background: rgba(15,23,42,0.9);
-      color: var(--warm-soft);
+      color: var(--accent-warm-soft);
       font-size: 10px;
     }
 
     .title {
-      font-size: clamp(32px, 5vw, 44px);
-      line-height: 1.15;
+      font-size: clamp(28px, 5.2vw, 40px);
+      line-height: 1.18;
     }
 
     .t-cold {
-      background: linear-gradient(120deg, var(--cold-soft), var(--cold));
+      background: linear-gradient(120deg, var(--accent-cold-soft), var(--accent-cold));
       -webkit-background-clip: text;
       color: transparent;
     }
     .t-warm {
-      background: linear-gradient(120deg, var(--warm-soft), var(--warm));
+      background: linear-gradient(120deg, var(--accent-warm-soft), var(--accent-warm));
       -webkit-background-clip: text;
       color: transparent;
     }
 
     .subtitle {
-      font-size: 14px;
-      line-height: 1.8;
+      font-size: 13px;
+      line-height: 1.9;
       color: var(--txt-sub);
     }
 
-    .subtitle strong {
-      color: #e5e7eb;
-      font-weight: 500;
-    }
+    .subtitle strong { color: #e5e7eb; font-weight: 500; }
 
-    .button-row {
+    .hero-buttons {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
       margin-top: 4px;
     }
 
-    .hint-text {
-      font-size: 12px;
-      color: var(--txt-sub);
-      margin-top: 6px;
-    }
-
-    .hint-badge {
-      border-radius: 999px;
-      border: 1px solid rgba(56,189,248,0.8);
-      padding: 2px 8px;
-      font-size: 10px;
-      color: var(--cold-soft);
-      margin-right: 6px;
-    }
-
-    /* 心情滑杆 */
     .mood-row {
       display: flex;
       align-items: center;
-      gap: 10px;
-      margin-top: 10px;
+      gap: 8px;
+      margin-top: 4px;
       font-size: 12px;
       color: var(--txt-sub);
     }
@@ -356,289 +299,177 @@
       accent-color: #fb923c;
     }
 
-    /* 右侧球体 */
-    .right {
-      flex: 1;
+    .hint-text {
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--txt-sub);
+    }
+
+    .hint-badge {
+      border-radius: 999px;
+      border: 1px solid rgba(56,189,248,0.8);
+      padding: 2px 8px;
+      font-size: 10px;
+      color: var(--accent-cold-soft);
+      margin-right: 6px;
+    }
+
+    /* 右侧光球 & 3D 粒子 */
+    .hero-right {
       display: flex;
-      align-items: center;
       justify-content: center;
-      min-width: 0;
+      align-items: center;
     }
 
     .orb-wrapper {
       position: relative;
-      width: min(420px, 80vw);
+      width: min(360px, 80vw);
       aspect-ratio: 1/1;
-      perspective: 900px;
+      perspective: 800px;
+      will-change: transform;
       transition: transform 0.25s ease-out;
     }
 
     .orb {
       position: absolute;
       inset: 12%;
-      border-radius: 50%;
+      border-radius: 999px;
       background:
         radial-gradient(circle at 20% 0%, rgba(255,255,255,0.7), transparent 52%),
         radial-gradient(circle at 70% 80%, rgba(251,146,60,0.75), transparent 70%),
-        radial-gradient(circle at 0% 80%, rgba(56,189,248,0.5), transparent 65%),
+        radial-gradient(circle at 0% 80%, rgba(56,189,248,0.45), transparent 65%),
         #020617;
+      border: 1px solid rgba(148,163,184,0.7);
       box-shadow:
         0 0 80px rgba(251,146,60,0.45),
         0 0 120px rgba(56,189,248,0.45);
-      border: 1px solid rgba(148,163,184,0.7);
-      transform-style: preserve-3d;
       overflow: hidden;
-      transition: transform 0.12s linear, box-shadow 0.6s ease;
+      transform-style: preserve-3d;
     }
 
     .orb-breathe {
-      animation: breathe 4.4s ease-in-out infinite;
+      animation: breathe 4.2s ease-in-out infinite;
     }
 
     @keyframes breathe {
       0%   { transform: translateZ(0) scale(1); }
-      40%  { transform: translateZ(16px) scale(1.04); box-shadow: 0 0 120px rgba(251,146,60,0.7), 0 0 200px rgba(56,189,248,0.65); }
+      40%  { transform: translateZ(14px) scale(1.04); box-shadow: 0 0 120px rgba(251,146,60,0.7),0 0 180px rgba(56,189,248,0.6); }
       100% { transform: translateZ(0) scale(1); }
     }
 
-    /* Three.js 粒子层 */
     .orb-three-layer {
       position: absolute;
-      inset: 10%;
+      inset: 9%;
       pointer-events: none;
     }
 
-    /* 点阵环 + 云 */
     .dot-ring {
       position: absolute;
       inset: 6%;
       border-radius: 999px;
       border: 1px dashed rgba(148,163,184,0.6);
-      box-shadow: 0 0 42px rgba(56,189,248,0.6);
-    }
-
-    .dot-ring::before,
-    .dot-ring::after {
-      content: "";
-      position: absolute;
-      inset: 12%;
-      border-radius: inherit;
-      border: 1px dashed rgba(148,163,184,0.4);
-    }
-
-    .dot-ring::after {
-      inset: 22%;
-      opacity: 0.4;
+      box-shadow: 0 0 38px rgba(56,189,248,0.6);
     }
 
     .dot-cloud {
       position: absolute;
-      inset: -12%;
+      inset: -10%;
       border-radius: 999px;
       background-image: radial-gradient(circle, rgba(148,163,184,0.8) 1px, transparent 1px);
       background-size: 30px 30px;
-      mask-image: radial-gradient(circle, black 42%, transparent 90%);
-      opacity: 0.8;
-      animation: dotDrift 28s linear infinite;
+      mask-image: radial-gradient(circle, black 45%, transparent 90%);
+      opacity: 0.75;
+      animation: dotDrift 26s linear infinite;
     }
 
     @keyframes dotDrift {
       from { transform: translate3d(0,0,0) rotate(0deg); }
-      to   { transform: translate3d(4px,-6px,0) rotate(360deg); }
+      to   { transform: translate3d(4px,-5px,0) rotate(360deg); }
     }
 
-    /* 说明卡片 */
     .orb-card {
       position: absolute;
-      right: 5%;
-      bottom: 4%;
-      min-width: 180px;
-      padding: 10px 13px;
+      right: 6%;
+      bottom: 5%;
+      min-width: 168px;
+      padding: 9px 11px;
       border-radius: 14px;
-      background: radial-gradient(circle at top left, rgba(15,23,42,0.98), rgba(15,23,42,0.7));
-      border: 1px solid rgba(148,163,184,0.7);
-      box-shadow: 0 18px 40px rgba(15,23,42,0.95);
+      border: 1px solid var(--glass-border);
+      background: radial-gradient(circle at top left, rgba(15,23,42,0.98), rgba(15,23,42,0.9));
+      box-shadow: 0 18px 40px rgba(15,23,42,0.98);
       font-size: 11px;
       color: var(--txt-sub);
-      backdrop-filter: blur(18px);
+      backdrop-filter: blur(16px);
     }
 
     .orb-card-title {
       font-size: 12px;
-      color: var(--txt-main);
       margin-bottom: 4px;
       display: flex;
       align-items: center;
       gap: 6px;
+      color: var(--txt-main);
     }
 
     .orb-card-badge {
-      padding: 1px 7px;
+      padding: 1px 6px;
       border-radius: 999px;
-      border: 1px solid rgba(248,250,252,0.7);
+      border: 1px solid rgba(248,250,252,0.8);
       font-size: 10px;
-      color: var(--warm-soft);
+      color: var(--accent-warm-soft);
     }
 
     .orb-card-temp {
       font-size: 11px;
-      color: var(--cold-soft);
+      color: var(--accent-cold-soft);
       margin-bottom: 3px;
     }
 
-    /* Canvas 雪花 */
-    .snow-canvas {
-      position: fixed;
-      inset: 0;
-      z-index: 1;
-      pointer-events: none;
-    }
-
-    /* 下方段落用于滚动视差效果 */
-    .story-scroll {
+    /* 天气 + 日历区块 */
+    .panel-grid {
       position: relative;
       z-index: 2;
-      font-size: 12px;
-      color: var(--txt-sub);
-      max-width: 620px;
-      margin-top: 24px;
-      line-height: 1.8;
-    }
-
-    /* 多页故事弹窗 */
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: rgba(15,23,42,0.65);
-      backdrop-filter: blur(12px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 99;
-    }
-
-    .modal {
-      width: min(450px, 90vw);
-      border-radius: 18px;
-      padding: 18px 18px 14px;
-      background:
-        radial-gradient(circle at top left, rgba(15,23,42,0.98), rgba(15,23,42,0.9));
-      border: 1px solid rgba(148,163,184,0.7);
-      box-shadow: 0 24px 60px rgba(15,23,42,1);
-      color: var(--txt-main);
-      animation: modalIn 0.28s ease-out;
-    }
-
-    @keyframes modalIn {
-      from { transform: translateY(8px) scale(0.96); opacity: 0; }
-      to   { transform: translateY(0) scale(1); opacity: 1; }
-    }
-
-    .modal-title { font-size: 17px; margin-bottom: 4px; }
-    .modal-sub { font-size: 11px; color: var(--txt-sub); margin-bottom: 10px; }
-
-    .modal-body {
-      font-size: 13px;
-      color: var(--txt-sub);
-      line-height: 1.8;
-      margin-bottom: 10px;
-      white-space: pre-wrap;
-    }
-
-    .dialog-line { margin-bottom: 6px; }
-    .dialog-speaker {
-      font-weight: 500;
-      color: var(--cold-soft);
-      margin-right: 6px;
-    }
-
-    .modal-footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .progress-dots {
-      display: flex;
-      gap: 6px;
-      align-items: center;
-    }
-
-    .dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.7);
-      background: transparent;
-    }
-
-    .dot.active {
-      background: #f97316;
-      box-shadow: 0 0 8px rgba(249,115,22,0.9);
-    }
-
-    .modal-btn-row {
-      display: flex;
-      gap: 8px;
-    }
-
-    /* ====== 天气 + 日历区域 ====== */
-    .weather-section {
-      position: relative;
-      z-index: 2;
-      margin-top: 12px;
+      margin-top: 10px;
       display: grid;
-      grid-template-columns: 1.4fr 1fr;
-      gap: 18px;
-      max-width: 1180px;
+      grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+      gap: 16px;
+      max-width: 1120px;
     }
 
-    @media (max-width: 900px) {
-      .weather-section {
-        grid-template-columns: 1fr;
+    @media (max-width: 860px) {
+      .panel-grid {
+        grid-template-columns: minmax(0,1fr);
       }
     }
 
     .glass-card {
       border-radius: 16px;
       padding: 14px 16px;
-      background: rgba(15,23,42,0.78);
-      border: 1px solid rgba(148,163,184,0.7);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
       box-shadow:
-        0 0 0 1px rgba(15,23,42,0.7),
-        0 18px 40px rgba(15,23,42,0.95);
-      backdrop-filter: blur(16px);
-    }
-
-    .weather-main {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+        0 0 0 1px rgba(15,23,42,0.8),
+        0 18px 40px rgba(15,23,42,0.98);
+      backdrop-filter: blur(18px);
     }
 
     .weather-top {
       display: flex;
       justify-content: space-between;
-      align-items: center;
-      gap: 10px;
+      align-items: baseline;
+      gap: 8px;
       flex-wrap: wrap;
+      margin-bottom: 6px;
     }
 
     .weather-city {
-      font-size: 16px;
+      font-size: 15px;
       font-weight: 500;
     }
 
     .weather-desc {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--txt-sub);
-    }
-
-    .weather-temp-block {
-      display: flex;
-      align-items: baseline;
-      gap: 10px;
     }
 
     .temp-now {
@@ -647,17 +478,18 @@
     }
 
     .temp-feel {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--txt-sub);
     }
 
     .weather-meta {
-      font-size: 12px;
+      font-size: 11px;
       color: var(--txt-sub);
       display: flex;
-      gap: 10px;
       flex-wrap: wrap;
+      gap: 8px;
       align-items: center;
+      margin-bottom: 8px;
     }
 
     .status-dot {
@@ -665,51 +497,46 @@
       height: 8px;
       border-radius: 999px;
       background: #22c55e;
-      box-shadow: 0 0 10px rgba(34,197,94,0.9);
+      box-shadow: 0 0 8px rgba(34,197,94,0.9);
       margin-right: 4px;
     }
 
     .trend-title {
-      font-size: 13px;
-      margin-bottom: 4px;
+      font-size: 12px;
       color: var(--txt-sub);
+      margin-bottom: 4px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-
-    .trend-chart-wrapper {
-      width: 100%;
-      overflow-x: auto;
-      padding-bottom: 4px;
     }
 
     .trend-svg {
       width: 100%;
-      min-width: 360px;
-      height: 120px;
+      height: 110px;
     }
 
-    .trend-labels {
-      display: flex;
-      justify-content: space-between;
+    .trend-legend {
       margin-top: 4px;
       font-size: 10px;
       color: var(--txt-sub);
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
     }
 
+    /* 日历 */
     .calendar-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 10px;
       font-size: 13px;
+      margin-bottom: 8px;
     }
 
     .cal-nav-btn {
       padding: 4px 8px;
       border-radius: 999px;
-      border: 1px solid rgba(148,163,184,0.6);
+      border: 1px solid rgba(148,163,184,0.7);
       background: rgba(15,23,42,0.7);
       color: var(--txt-main);
       font-size: 11px;
@@ -730,15 +557,15 @@
     }
 
     .cal-day {
-      padding: 6px 0;
-      border-radius: 8px;
+      padding: 5px 0;
       margin: 2px;
+      border-radius: 8px;
+      min-height: 28px;
       position: relative;
-      min-height: 30px;
     }
 
     .cal-day.empty {
-      opacity: 0.15;
+      opacity: 0.12;
     }
 
     .cal-day.today {
@@ -746,27 +573,20 @@
       box-shadow: 0 0 10px rgba(251,146,60,0.7);
     }
 
-    .cal-day .date {
-      font-size: 12px;
-    }
-
-    .cal-day .holiday {
-      font-size: 10px;
-      color: #fed7aa;
-      margin-top: 2px;
-    }
-
     .cal-day.holiday-day {
       background: rgba(180,83,9,0.32);
       border: 1px solid rgba(251,146,60,0.8);
     }
 
+    .cal-day .date { font-size: 12px; }
+    .cal-day .holiday { font-size: 10px; color: #fed7aa; margin-top: 2px; }
+
     .cal-legend {
-      margin-top: 8px;
+      margin-top: 6px;
       font-size: 11px;
       color: var(--txt-sub);
       display: flex;
-      gap: 12px;
+      gap: 10px;
       flex-wrap: wrap;
     }
 
@@ -774,13 +594,12 @@
       width: 10px;
       height: 10px;
       border-radius: 4px;
-      margin-right: 4px;
       display: inline-block;
-      vertical-align: middle;
+      margin-right: 4px;
     }
 
     .legend-holiday {
-      background: rgba(180,83,9,0.6);
+      background: rgba(180,83,9,0.65);
       border: 1px solid rgba(251,146,60,0.9);
     }
 
@@ -791,55 +610,82 @@
       box-shadow: 0 0 6px rgba(251,146,60,0.7);
     }
 
+    /* 下方文字说明 */
+    .story-scroll {
+      position: relative;
+      z-index: 2;
+      max-width: 640px;
+      margin-top: 20px;
+      font-size: 12px;
+      color: var(--txt-sub);
+      line-height: 1.9;
+    }
+
     .footer-note {
       margin-top: 8px;
       font-size: 11px;
+    }
+
+    /* BGM 提示 */
+    .music-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 11px;
       color: var(--txt-sub);
+      margin-top: 4px;
+    }
+
+    .music-dot-on {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #fb923c;
+      box-shadow: 0 0 6px rgba(251,146,60,0.9);
     }
 
     @media (max-width: 600px) {
-      .header-right {
-        text-align: left;
+      .top-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .top-right {
+        justify-content: flex-start;
       }
     }
   </style>
 </head>
 <body>
+<canvas id="snowCanvas" class="snow-canvas"></canvas>
 <div id="root"></div>
 
 <script type="text/babel">
 const { useState, useEffect, useRef } = React;
 const THREE = window.THREE;
 
-// ===== 和风天气 KEY 与节假日配置 =====
-const QWEATHER_KEY = "9f09c671816448ba8a6e514466b7c31d";
+// ====== 和风天气配置（记得把 key 换成你自己的，如果现在这个不能用） ======
+const QWEATHER_KEY = "9f09c671816448ba8a6e514466b7c31d"; // 可换成你创建的 weather-key
+const QWEATHER_DOMAIN = "https://mh7md9rpa5.re.qweatherapi.com"; // 你的专属域名
 
+// 一些节假日示例（2025）
 const CHINA_HOLIDAYS_2025 = {
   "2025-01-01": "元旦",
   "2025-01-28": "春节",
   "2025-01-29": "春节",
   "2025-01-30": "春节",
-  "2025-04-04": "清明节",
-  "2025-05-01": "劳动节",
-  "2025-06-01": "儿童节",
-  "2025-10-01": "国庆节",
-  "2025-10-02": "国庆节",
-  "2025-10-03": "国庆节"
+  "2025-04-04": "清明",
+  "2025-05-01": "劳动",
+  "2025-06-01": "儿童",
+  "2025-10-01": "国庆",
+  "2025-10-02": "国庆",
+  "2025-10-03": "国庆"
 };
 
-function bgTempMode(feel) {
-  if (feel == null || isNaN(feel)) return "neutral";
-  if (feel <= 0) return "cold";
-  if (feel >= 16) return "warm";
-  return "neutral";
-}
-
-// helper
-function formatHourLabel(fxTime) {
-  const m = fxTime.match(/T(\d{2}):/);
-  if (!m) return "";
-  return m[1] + ":00";
-}
+// 小工具
+const isMobile = () =>
+  typeof window !== "undefined" &&
+  (window.innerWidth <= 768 ||
+   (window.matchMedia && window.matchMedia("(pointer: coarse)").matches));
 
 function toYMD(date) {
   const y = date.getFullYear();
@@ -848,7 +694,257 @@ function toYMD(date) {
   return `${y}-${m}-${d}`;
 }
 
-// ===== 日历组件 =====
+function bgTempMode(feel) {
+  if (feel == null || isNaN(feel)) return "neutral";
+  if (feel <= 5) return "cold";
+  if (feel >= 16) return "warm";
+  return "neutral";
+}
+
+/** 尝试把 response 当 JSON 解析，解析失败则返回 null */
+async function safeJson(resp) {
+  try {
+    const text = await resp.text();
+    if (!text) return null;
+    return JSON.parse(text);
+  } catch {
+    return null;
+  }
+}
+
+// ====== 雪花 Canvas（全局） ======
+function initSnowCanvas() {
+  const canvas = document.getElementById("snowCanvas");
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+
+  let width, height;
+  function resize() {
+    width = canvas.width = window.innerWidth;
+    height = canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener("resize", resize);
+
+  const count = isMobile() ? 55 : 120;
+  const flakes = Array.from({ length: count }).map(() => ({
+    x: Math.random() * width,
+    y: Math.random() * height,
+    r: Math.random() * 1.8 + 0.6,
+    vy: Math.random() * 0.7 + 0.3,
+    vx: (Math.random() - 0.5) * 0.4
+  }));
+
+  let running = true;
+  function render() {
+    if (!running) return;
+    ctx.clearRect(0, 0, width, height);
+    ctx.fillStyle = "rgba(248,250,252,0.9)";
+    flakes.forEach(f => {
+      f.y += f.vy;
+      f.x += f.vx;
+      if (f.y > height + 5) {
+        f.y = -10;
+        f.x = Math.random() * width;
+      }
+      if (f.x > width) f.x = 0;
+      if (f.x < 0) f.x = width;
+      ctx.beginPath();
+      ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    requestAnimationFrame(render);
+  }
+  render();
+
+  return () => {
+    running = false;
+    window.removeEventListener("resize", resize);
+  };
+}
+
+// ====== 3D 粒子光球（Three.js，性能友好版） ======
+function useOrbThree(ref, sceneMode, tempMode) {
+  useEffect(() => {
+    if (!ref.current || !THREE) return;
+
+    const container = ref.current;
+    const width = container.clientWidth || 200;
+    const height = container.clientHeight || width;
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 100);
+    camera.position.z = 3;
+
+    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
+    renderer.setSize(width, height);
+    renderer.setPixelRatio(window.devicePixelRatio || 1);
+    container.innerHTML = "";
+    container.appendChild(renderer.domElement);
+
+    const num = isMobile() ? 260 : 620;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(num * 3);
+
+    for (let i = 0; i < num; i++) {
+      const r = 1.15 + Math.random() * 0.08;
+      const theta = Math.random() * 2 * Math.PI;
+      const phi = Math.acos(2 * Math.random() - 1);
+      const x = r * Math.sin(phi) * Math.cos(theta);
+      const y = r * Math.sin(phi) * Math.sin(theta);
+      const z = r * Math.cos(phi);
+      positions[3 * i] = x;
+      positions[3 * i + 1] = y;
+      positions[3 * i + 2] = z;
+    }
+    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
+
+    const material = new THREE.PointsMaterial({
+      color: 0xffe7a3,
+      size: 0.028,
+      transparent: true,
+      opacity: 0.9,
+      sizeAttenuation: true
+    });
+
+    const points = new THREE.Points(geometry, material);
+    scene.add(points);
+
+    // 根据场景和温度调颜色
+    function updateColor() {
+      if (sceneMode === "snow") {
+        material.color.set(0xc4e4ff);
+      } else if (sceneMode === "dusk") {
+        material.color.set(0xffbf8b);
+      } else {
+        // night
+        if (tempMode === "cold") material.color.set(0x86c5ff);
+        else if (tempMode === "warm") material.color.set(0xffd28a);
+        else material.color.set(0xffe7a3);
+      }
+    }
+    updateColor();
+
+    let frameId;
+    const speedBase = isMobile() ? 0.0022 : 0.0032;
+
+    function animate() {
+      frameId = requestAnimationFrame(animate);
+      points.rotation.y += speedBase;
+      points.rotation.x += speedBase * 0.4;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    function handleResize() {
+      const w = container.clientWidth || 200;
+      const h = container.clientHeight || w;
+      renderer.setSize(w, h);
+      camera.aspect = w / h;
+      camera.updateProjectionMatrix();
+    }
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener("resize", handleResize);
+      geometry.dispose();
+      material.dispose();
+      renderer.dispose();
+      container.innerHTML = "";
+    };
+  }, [ref, sceneMode, tempMode]);
+}
+
+// ====== 天气 + 3 天趋势 hook（只用免费接口） ======
+function useWeather(onFeelsLike) {
+  const [location, setLocation] = useState(null);
+  const [now, setNow] = useState(null);
+  const [daily, setDaily] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    async function fetchWeather(lat, lon) {
+      try {
+        setLoading(true);
+        setError(null);
+
+        const locParam = `${lon.toFixed(2)},${lat.toFixed(2)}`;
+
+        // 1. 城市反查
+        const cityResp = await fetch(
+          `${QWEATHER_DOMAIN}/v2/city/lookup?location=${locParam}&key=${QWEATHER_KEY}`
+        );
+        const cityJson = await safeJson(cityResp);
+        if (!cityJson || cityJson.code !== "200" || !cityJson.location?.length) {
+          throw new Error("城市查询失败（可能是 key 或域名设置问题）");
+        }
+        const city = cityJson.location[0];
+        setLocation({ name: city.name, adm1: city.adm1, id: city.id });
+
+        // 2. 实时天气
+        const nowResp = await fetch(
+          `${QWEATHER_DOMAIN}/v7/weather/now?location=${city.id}&key=${QWEATHER_KEY}`
+        );
+        const nowJson = await safeJson(nowResp);
+        if (!nowJson || nowJson.code !== "200" || !nowJson.now) {
+          throw new Error("实时天气查询失败");
+        }
+        const feel = Number(nowJson.now.feelsLike);
+        setNow({
+          temp: Number(nowJson.now.temp),
+          feelsLike: feel,
+          text: nowJson.now.text,
+          obsTime: nowJson.updateTime
+        });
+        if (typeof onFeelsLike === "function" && !Number.isNaN(feel)) {
+          onFeelsLike(feel);
+        }
+
+        // 3. 三天天气（趋势）
+        const dailyResp = await fetch(
+          `${QWEATHER_DOMAIN}/v7/weather/3d?location=${city.id}&key=${QWEATHER_KEY}`
+        );
+        const dailyJson = await safeJson(dailyResp);
+        if (dailyJson && dailyJson.code === "200" && Array.isArray(dailyJson.daily)) {
+          const arr = dailyJson.daily.slice(0, 3).map(d => ({
+            date: d.fxDate,
+            text: d.textDay,
+            tempMin: Number(d.tempMin),
+            tempMax: Number(d.tempMax)
+          }));
+          setDaily(arr);
+        } else {
+          setDaily([]);
+        }
+      } catch (err) {
+        console.error(err);
+        setError(err.message || "请求失败");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    function byGeoOrFallback() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          pos => fetchWeather(pos.coords.latitude, pos.coords.longitude),
+          () => fetchWeather(39.92, 116.41), // 默认北京
+          { enableHighAccuracy: false, timeout: 5000 }
+        );
+      } else {
+        fetchWeather(39.92, 116.41);
+      }
+    }
+
+    byGeoOrFallback();
+  }, [onFeelsLike]);
+
+  return { location, now, daily, loading, error };
+}
+
+// ====== 日历组件 ======
 function CalendarPanel() {
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date();
@@ -863,16 +959,9 @@ function CalendarPanel() {
   const firstWeekday = firstDay.getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const prevMonth = () => {
-    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
-  };
-  const nextMonth = () => {
-    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
-  };
-
   const cells = [];
   for (let i = 0; i < firstWeekday; i++) {
-    cells.push({ empty: true, key: "e" + i });
+    cells.push({ empty: true, key: `e-${i}` });
   }
   for (let d = 1; d <= daysInMonth; d++) {
     const date = new Date(year, month, d);
@@ -889,7 +978,14 @@ function CalendarPanel() {
     });
   }
 
-  const monthLabel = `${year} 年 ${(month + 1).toString().padStart(2, "0")} 月`;
+  const prevMonth = () => {
+    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
+  };
+  const nextMonth = () => {
+    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() + 1, 1));
+  };
+
+  const monthLabel = `${year} 年 ${(month + 1).toString().padStart(2,"0")} 月`;
 
   return (
     <div className="glass-card">
@@ -900,15 +996,13 @@ function CalendarPanel() {
           <button className="cal-nav-btn" onClick={nextMonth} style={{ marginLeft: 6 }}>▶</button>
         </div>
       </div>
-
       <div className="cal-weekdays">
         <div>日</div><div>一</div><div>二</div><div>三</div>
         <div>四</div><div>五</div><div>六</div>
       </div>
-
       <div className="cal-grid">
         {cells.map(cell => {
-          if (cell.empty) return <div key={cell.key} className="cal-day empty"></div>;
+          if (cell.empty) return <div key={cell.key} className="cal-day empty" />;
           const cls = [
             "cal-day",
             cell.isToday ? "today" : "",
@@ -924,7 +1018,6 @@ function CalendarPanel() {
           );
         })}
       </div>
-
       <div className="cal-legend">
         <span>
           <span className="legend-dot legend-holiday"></span>节假日（示例：2025 部分）
@@ -937,424 +1030,186 @@ function CalendarPanel() {
   );
 }
 
-// ===== 天气 + 24h 趋势组件 =====
-function WeatherAndCalendar({ onFeelsLikeChange }) {
-  const [location, setLocation] = useState(null);
-  const [nowWeather, setNowWeather] = useState(null);
-  const [hourly, setHourly] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [errorMsg, setErrorMsg] = useState(null);
+// ====== 天气卡片（使用免费接口结果） ======
+function WeatherPanel({ onFeelsLikeChange }) {
+  const { location, now, daily, loading, error } = useWeather(onFeelsLikeChange);
 
-  useEffect(() => {
-    async function fetchWeatherByLatLon(lat, lon) {
-      try {
-        setLoading(true);
-        setErrorMsg(null);
+  const minAll = daily.length
+    ? Math.min(...daily.map(d => d.tempMin))
+    : null;
+  const maxAll = daily.length
+    ? Math.max(...daily.map(d => d.tempMax))
+    : null;
+  const range = maxAll != null ? Math.max(maxAll - minAll, 1) : 1;
 
-        const locParam = `${lon.toFixed(2)},${lat.toFixed(2)}`;
-
-        // 1. 城市反查 —— 使用你的专属域名
-        const cityResp = await fetch(
-          `https://mh7md9rpa5.re.qweatherapi.com/v2/city/lookup?location=${locParam}&key=${QWEATHER_KEY}`
-        );
-        const cityData = await cityResp.json();
-        if (cityData.code !== "200" || !cityData.location || !cityData.location.length) {
-          throw new Error("城市查询失败：" + cityData.code);
-        }
-        const target = cityData.location[0];
-        setLocation({ name: target.name, adm1: target.adm1 });
-
-        // 2. 24 小时天气 —— 同样使用你的域名
-        const weatherResp = await fetch(
-          `https://mh7md9rpa5.re.qweatherapi.com/v7/weather/24h?location=${target.id}&key=${QWEATHER_KEY}`
-        );
-        const weatherData = await weatherResp.json();
-        if (weatherData.code !== "200" || !weatherData.hourly) {
-          throw new Error("天气查询失败：" + weatherData.code);
-        }
-
-        const list = weatherData.hourly;
-        const first = list[0];
-        const feels = Number(first.feelsLike);
-
-        setNowWeather({
-          temp: Number(first.temp),
-          feelsLike: feels,
-          text: first.text,
-          obsTime: first.fxTime
-        });
-        setHourly(list.slice(0, 24));
-
-        if (typeof onFeelsLikeChange === "function") {
-          onFeelsLikeChange(feels);
-        }
-      } catch (err) {
-        console.error(err);
-        setErrorMsg(err.message || "请求失败");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        pos => fetchWeatherByLatLon(pos.coords.latitude, pos.coords.longitude),
-        () => fetchWeatherByLatLon(39.92, 116.41), // 默认北京
-        { enableHighAccuracy: false, timeout: 4000 }
-      );
-    } else {
-      fetchWeatherByLatLon(39.92, 116.41);
-    }
-  }, [onFeelsLikeChange]);
-
-  // 24 小时趋势数据处理
-  let minTemp = null, maxTemp = null;
-  const temps = hourly.map(h => Number(h.temp));
-  if (temps.length) {
-    minTemp = Math.min(...temps);
-    maxTemp = Math.max(...temps);
-  }
-  const tempRange = maxTemp !== null ? (maxTemp - minTemp || 1) : 1;
-
-  const points = hourly.map((h, idx) => {
-    const x = (idx / Math.max(hourly.length - 1, 1)) * 100;
-    const t = Number(h.temp);
-    const y = 100 - ((t - minTemp) / tempRange) * 80 - 10;
-    return `${x},${y}`;
-  }).join(" ");
+  // 生成 3 天小趋势条形图
+  const bars = daily.map((d, idx) => {
+    const h = ((d.tempMax - minAll) / range) * 70 + 10; // 百分比高度
+    return { h, idx, label: d.date.slice(5), text: d.text };
+  });
 
   return (
-    <div className="weather-section">
-      <div className="glass-card">
-        <div className="weather-main">
-          {loading && <div style={{ fontSize: 13 }}>正在获取定位与天气数据…</div>}
-          {errorMsg && (
-            <div style={{ fontSize: 13, color: "#fca5a5" }}>
-              获取天气失败：{errorMsg}（请检查 key / 域名 / 网络）
-            </div>
-          )}
-          {!loading && !errorMsg && nowWeather && (
-            <>
-              <div className="weather-top">
-                <div>
-                  <div className="weather-city">
-                    {location?.name ?? "未知城市"}
-                  </div>
-                  <div className="weather-desc">
-                    {nowWeather.text} · 未来 24 小时趋势
-                  </div>
-                </div>
-                <div className="weather-temp-block">
-                  <div className="temp-now">
-                    {nowWeather.temp.toFixed(0)}°
-                  </div>
-                  <div className="temp-feel">
-                    体感 {nowWeather.feelsLike.toFixed(0)}°C
-                  </div>
-                </div>
-              </div>
-
-              <div className="weather-meta">
-                <span><span className="status-dot" />实时天气 · 和风天气</span>
-                {nowWeather.obsTime && (
-                  <span>最新预报时间：{nowWeather.obsTime.replace("T", " ").slice(0, 16)}</span>
-                )}
-                {minTemp !== null && maxTemp !== null && (
-                  <span>未来 24 小时区间：{minTemp.toFixed(0)}° ~ {maxTemp.toFixed(0)}°C</span>
-                )}
-              </div>
-            </>
-          )}
+    <div className="glass-card">
+      <div className="weather-top">
+        <div>
+          <div className="weather-city">
+            {location ? `${location.name} · ${location.adm1}` : "定位中…"}
+          </div>
+          <div className="weather-desc">
+            {now
+              ? `${now.text} · 实时体感温度`
+              : "正在请求实时天气数据…"}
+          </div>
         </div>
-
-        <div className="glass-card" style={{ marginTop: 10 }}>
-          <div className="trend-title">
-            <span>未来 24 小时温度趋势</span>
-            <span style={{ fontSize: 11, color: "var(--txt-sub)" }}>
-              横轴：时间 · 纵轴：温度（°C）
-            </span>
+        <div>
+          <div className="temp-now">
+            {now ? `${now.temp.toFixed(0)}°` : "--"}
           </div>
-          <div className="trend-chart-wrapper">
-            <svg viewBox="0 0 100 100" className="trend-svg" preserveAspectRatio="none">
-              <line x1="0" y1="90" x2="100" y2="90" stroke="rgba(148,163,184,0.5)" strokeWidth="0.3" />
-              {hourly.length > 1 && (
-                <polyline
-                  points={points}
-                  fill="none"
-                  stroke="url(#tempGradient)"
-                  strokeWidth="1.2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-              )}
-              <defs>
-                <linearGradient id="tempGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                  <stop offset="0%" stopColor="#60a5fa" />
-                  <stop offset="50%" stopColor="#38bdf8" />
-                  <stop offset="100%" stopColor="#fb923c" />
-                </linearGradient>
-              </defs>
-            </svg>
-          </div>
-          <div className="trend-labels">
-            {hourly.length > 0 && (
-              <>
-                <span>{formatHourLabel(hourly[0].fxTime)}</span>
-                <span>{formatHourLabel(hourly[Math.floor(hourly.length / 2)].fxTime)}</span>
-                <span>{formatHourLabel(hourly[hourly.length - 1].fxTime)}</span>
-              </>
-            )}
+          <div className="temp-feel">
+            {now ? `体感 ${now.feelsLike.toFixed(0)}°C` : "体感温度加载中"}
           </div>
         </div>
       </div>
 
-      <CalendarPanel />
+      <div className="weather-meta">
+        <span><span className="status-dot" />数据源：和风天气 QWeather</span>
+        {now?.obsTime && (
+          <span>更新：{now.obsTime.replace("T"," ").slice(0,16)}</span>
+        )}
+        {minAll != null && maxAll != null && (
+          <span>未来 3 天区间：{minAll.toFixed(0)}° ~ {maxAll.toFixed(0)}°C</span>
+        )}
+      </div>
+
+      {loading && (
+        <div style={{ fontSize: 12, color: "var(--txt-sub)" }}>
+          正在获取定位与天气数据…
+        </div>
+      )}
+
+      {error && (
+        <div style={{ fontSize: 12, color: "#fca5a5", marginBottom: 6 }}>
+          获取天气失败：{error}（可稍后刷新，或检查 key / 域名配置）
+        </div>
+      )}
+
+      {!loading && !error && daily.length > 0 && (
+        <>
+          <div className="trend-title">
+            <span>未来 3 天温度趋势（免费接口版）</span>
+            <span style={{ fontSize: 11 }}>长条越高表示最高温越高</span>
+          </div>
+          <svg viewBox="0 0 100 80" className="trend-svg" preserveAspectRatio="none">
+            <line x1="0" y1="75" x2="100" y2="75"
+              stroke="rgba(148,163,184,0.4)" strokeWidth="0.4" />
+            {bars.map((b, idx) => {
+              const barWidth = 16;
+              const gap = 22;
+              const x = 15 + idx * gap;
+              const y = 75 - b.h * 0.7;
+              return (
+                <g key={idx}>
+                  <rect
+                    x={x}
+                    y={y}
+                    width={barWidth}
+                    height={75 - y}
+                    rx="3"
+                    fill={idx === 0 ? "#60a5fa" : idx === 1 ? "#38bdf8" : "#fb923c"}
+                    opacity="0.9"
+                  />
+                  <text
+                    x={x + barWidth / 2}
+                    y={78}
+                    fontSize="7"
+                    textAnchor="middle"
+                    fill="rgba(148,163,184,0.9)"
+                  >
+                    {daily[idx].date.slice(5)}
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+          <div className="trend-legend">
+            {daily.map((d, idx) => (
+              <span key={idx}>
+                {d.date.slice(5)} · {d.text} · {d.tempMin.toFixed(0)}°~{d.tempMax.toFixed(0)}°
+              </span>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }
 
-// ===== 主应用 =====
-function WinterGlowApp() {
-  const [scene, setScene] = useState("night");   // night / snow / dusk
-  const [snowOn, setSnowOn] = useState(true);
-  const [breatheOn, setBreatheOn] = useState(true);
-  const [musicOn, setMusicOn] = useState(false);
-  const [showStory, setShowStory] = useState(false);
-  const [storyIndex, setStoryIndex] = useState(0);
-  const [mood, setMood] = useState(50);          // 0 冷静, 100 炽热
+// ====== 主应用组件 ======
+function App() {
+  const [scene, setScene] = useState("night"); // night / snow / dusk
+  const [mood, setMood] = useState(50);
   const [feelsLike, setFeelsLike] = useState(null);
+  const [musicOn, setMusicOn] = useState(false);
 
-  const glowRef = useRef(null);
+  const orbThreeRef = useRef(null);
   const orbRef = useRef(null);
-  const canvasRef = useRef(null);
+  const smokeRef = useRef(null);
+  const orbWrapRef = useRef(null);
   const audioRef = useRef(null);
-  const smokeLayerRef = useRef(null);
-  const orbWrapperRef = useRef(null);
-  const threeMountRef = useRef(null);
-  const threeStateRef = useRef(null);
 
-  /* 光标移动：光晕 + 球体倾斜 + 粒子尾迹 */
+  const mobile = isMobile();
+
+  // 初始化雪花
   useEffect(() => {
-    let lastParticleTime = 0;
-
-    function spawnCursorParticle(x, y) {
-      const el = document.createElement("div");
-      el.className = "cursor-particle";
-      const dx = (Math.random() - 0.5) * 40;
-      const dy = (Math.random() - 0.5) * 40;
-      el.style.setProperty("--dx", `${dx}px`);
-      el.style.setProperty("--dy", `${dy}px`);
-      el.style.left = `${x}px`;
-      el.style.top = `${y}px`;
-      document.body.appendChild(el);
-      setTimeout(() => el.remove(), 700);
-    }
-
-    function handleMove(e) {
-      const x = e.clientX - 110;
-      const y = e.clientY - 110;
-      if (glowRef.current) {
-        glowRef.current.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      }
-      if (orbRef.current) {
-        const cx = window.innerWidth / 2;
-        const cy = window.innerHeight / 2;
-        const dx = (e.clientX - cx) / 40;
-        const dy = (e.clientY - cy) / 40;
-        orbRef.current.style.transform =
-          `rotateX(${ -dy }deg) rotateY(${ dx }deg)`;
-      }
-      const now = performance.now();
-      if (now - lastParticleTime > 35) {
-        lastParticleTime = now;
-        spawnCursorParticle(e.clientX, e.clientY);
-      }
-    }
-
-    window.addEventListener("mousemove", handleMove);
-    return () => window.removeEventListener("mousemove", handleMove);
+    const cleanup = initSnowCanvas();
+    return cleanup;
   }, []);
 
-  /* Canvas 雪花 */
+  // Three.js 粒子球
+  const tempMode = bgTempMode(feelsLike);
+  useOrbThree(orbThreeRef, scene, tempMode);
+
+  // 视差滚动（轻量）
   useEffect(() => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
-    const ctx = canvas.getContext("2d");
-
-    let width, height;
-    function resize() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
-    }
-    resize();
-    window.addEventListener("resize", resize);
-
-    const flakes = Array.from({ length: 140 }).map(() => ({
-      x: Math.random() * width,
-      y: Math.random() * height,
-      r: Math.random() * 2 + 1,
-      speedY: Math.random() * 0.8 + 0.4,
-      speedX: (Math.random() - 0.5) * 0.6
-    }));
-
-    let animationId;
-    function render() {
-      ctx.clearRect(0, 0, width, height);
-      if (snowOn) {
-        ctx.fillStyle = "rgba(248,250,252,0.9)";
-        flakes.forEach(f => {
-          f.y += f.speedY;
-          f.x += f.speedX;
-          if (f.y > height + 5) {
-            f.y = -10;
-            f.x = Math.random() * width;
-          }
-          if (f.x > width) f.x = 0;
-          if (f.x < 0) f.x = width;
-          ctx.beginPath();
-          ctx.arc(f.x, f.y, f.r, 0, Math.PI * 2);
-          ctx.fill();
-        });
+    function onScroll() {
+      const y = window.scrollY || 0;
+      const offset = y * 0.04;
+      if (smokeRef.current) {
+        smokeRef.current.style.transform = `translate3d(0, ${-offset}px, 0)`;
       }
-      animationId = requestAnimationFrame(render);
-    }
-    render();
-
-    return () => {
-      cancelAnimationFrame(animationId);
-      window.removeEventListener("resize", resize);
-    };
-  }, [snowOn]);
-
-  /* Three.js 球体粒子云 */
-  useEffect(() => {
-    if (!threeMountRef.current || !THREE) return;
-
-    const container = threeMountRef.current;
-    const width = container.clientWidth || 200;
-    const height = container.clientHeight || width;
-
-    const scene3 = new THREE.Scene();
-    const camera = new THREE.PerspectiveCamera(55, width / height, 0.1, 100);
-    camera.position.z = 3;
-
-    const renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-    renderer.setSize(width, height);
-    renderer.setPixelRatio(window.devicePixelRatio || 1);
-    container.innerHTML = "";
-    container.appendChild(renderer.domElement);
-
-    const geometry = new THREE.BufferGeometry();
-    const num = 900;
-    const positions = new Float32Array(num * 3);
-    const velocities = new Float32Array(num * 3);
-
-    for (let i = 0; i < num; i++) {
-      const r = Math.random() * 1.2;
-      const theta = Math.random() * 2 * Math.PI;
-      const phi = Math.acos(2 * Math.random() - 1);
-      const x = r * Math.sin(phi) * Math.cos(theta);
-      const y = r * Math.sin(phi) * Math.sin(theta);
-      const z = r * Math.cos(phi);
-      positions[3 * i] = x;
-      positions[3 * i + 1] = y;
-      positions[3 * i + 2] = z;
-
-      velocities[3 * i] = (Math.random() - 0.5) * 0.002;
-      velocities[3 * i + 1] = (Math.random() - 0.5) * 0.002;
-      velocities[3 * i + 2] = (Math.random() - 0.5) * 0.002;
-    }
-
-    geometry.setAttribute(
-      "position",
-      new THREE.BufferAttribute(positions, 3)
-    );
-
-    const material = new THREE.PointsMaterial({
-      color: 0xffe7a3,
-      size: 0.025,
-      transparent: true,
-      opacity: 0.9,
-      sizeAttenuation: true
-    });
-
-    const points = new THREE.Points(geometry, material);
-    scene3.add(points);
-
-    let frameId;
-    function animate() {
-      frameId = requestAnimationFrame(animate);
-      const pos = geometry.attributes.position.array;
-      for (let i = 0; i < num; i++) {
-        pos[3 * i] += velocities[3 * i];
-        pos[3 * i + 1] += velocities[3 * i + 1];
-        pos[3 * i + 2] += velocities[3 * i + 2];
-        const dx = pos[3 * i];
-        const dy = pos[3 * i + 1];
-        const dz = pos[3 * i + 2];
-        const d = Math.sqrt(dx * dx + dy * dy + dz * dz);
-        if (d > 1.4) {
-          pos[3 * i] *= 0.95;
-          pos[3 * i + 1] *= 0.95;
-          pos[3 * i + 2] *= 0.95;
-        }
+      if (orbWrapRef.current && !mobile) {
+        orbWrapRef.current.style.transform = `translate3d(0, ${offset * 0.8}px, 0)`;
       }
-      geometry.attributes.position.needsUpdate = true;
-      points.rotation.y += 0.0018;
-      points.rotation.x += 0.0009;
-      renderer.render(scene3, camera);
     }
-    animate();
+    window.addEventListener("scroll", onScroll);
+    onScroll();
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [mobile]);
 
-    function handleResize() {
-      const w = container.clientWidth || 200;
-      const h = container.clientHeight || w;
-      renderer.setSize(w, h);
-      camera.aspect = w / h;
-      camera.updateProjectionMatrix();
-    }
-    window.addEventListener("resize", handleResize);
-
-    threeStateRef.current = {
-      renderer,
-      scene3,
-      camera,
-      material,
-      geometry,
-      frameId
-    };
-
-    return () => {
-      cancelAnimationFrame(frameId);
-      window.removeEventListener("resize", handleResize);
-      geometry.dispose();
-      material.dispose();
-      renderer.dispose();
-      container.innerHTML = "";
-    };
-  }, []);
-
-  /* 根据场景调整粒子颜色 */
+  // 光球跟随鼠标轻微倾斜（仅 PC）
   useEffect(() => {
-    const state = threeStateRef.current;
-    if (!state) return;
-    if (scene === "night") {
-      state.material.color.set(0xffe7a3);
-    } else if (scene === "snow") {
-      state.material.color.set(0xc4e4ff);
-    } else {
-      state.material.color.set(0xffbf8b);
+    if (mobile) return;
+    function onMove(e) {
+      if (!orbRef.current) return;
+      const cx = window.innerWidth / 2;
+      const cy = window.innerHeight / 2;
+      const dx = (e.clientX - cx) / 40;
+      const dy = (e.clientY - cy) / 40;
+      orbRef.current.style.transform = `rotateX(${-dy}deg) rotateY(${dx}deg)`;
     }
-  }, [scene]);
+    window.addEventListener("mousemove", onMove);
+    return () => window.removeEventListener("mousemove", onMove);
+  }, [mobile]);
 
-  /* 氛围音乐 */
+  // BGM
   useEffect(() => {
     if (!audioRef.current) {
+      // 浪漫钢琴 BGM（可换成你喜欢的）
       audioRef.current = new Audio(
-        "https://samplelib.com/lib/preview/mp3/sample-3s.mp3"
+        "https://cdn.pixabay.com/download/audio/2022/03/15/audio_2a034e25ce.mp3?filename=romantic-piano-110253.mp3"
       );
       audioRef.current.loop = true;
-      audioRef.current.volume = 0.5;
+      audioRef.current.volume = 0.6;
     }
     if (musicOn) {
       audioRef.current.play().catch(() => {});
@@ -1362,25 +1217,6 @@ function WinterGlowApp() {
       audioRef.current.pause();
     }
   }, [musicOn]);
-
-  /* 视差滚动 */
-  useEffect(() => {
-    function onScroll() {
-      const y = window.scrollY || 0;
-      const offset = y * 0.05;
-      if (smokeLayerRef.current) {
-        smokeLayerRef.current.style.transform =
-          `translate3d(0, ${-offset}px, 0)`;
-      }
-      if (orbWrapperRef.current) {
-        orbWrapperRef.current.style.transform =
-          `translate3d(0, ${offset * 0.6}px, 0)`;
-      }
-    }
-    window.addEventListener("scroll", onScroll);
-    onScroll();
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   const sceneLabel = {
     night: "黑夜 · Night",
@@ -1392,144 +1228,80 @@ function WinterGlowApp() {
     mood < 30 ? "偏冷静" :
     mood < 70 ? "平稳" : "偏温暖";
 
-  const moodFilter = `hue-rotate(${(mood - 50) * 0.8}deg) saturate(${0.9 + mood/120}) brightness(${0.9 + mood/300})`;
+  const moodFilter = `hue-rotate(${(mood - 50) * 0.7}deg) saturate(${0.9 + mood/130}) brightness(${0.95 + mood/350})`;
 
-  // 根据场景 + 体感温度调节背景
-  const tempMode = bgTempMode(feelsLike);
+  // 根据场景 + 温度设置背景
   let bg;
   if (scene === "night") {
     if (tempMode === "cold") {
-      bg = `radial-gradient(circle at top, var(--bg-night-cold-2), var(--bg-night-cold-1), #000)`;
+      bg = `radial-gradient(circle at top, #0f172a, #020617)`;
     } else if (tempMode === "warm") {
-      bg = `radial-gradient(circle at top, var(--bg-night-warm-2), var(--bg-night-warm-1), #020617)`;
+      bg = `radial-gradient(circle at top, #7c2d12, #020617)`;
     } else {
-      bg = `radial-gradient(circle at top, #111827, #020617)`;
+      bg = `radial-gradient(circle at top, var(--bg-night-2), var(--bg-night-1))`;
     }
   } else if (scene === "snow") {
-    if (tempMode === "cold") {
-      bg = `radial-gradient(circle at top, var(--bg-snow-cold-2), var(--bg-snow-cold-1), #020617)`;
-    } else if (tempMode === "warm") {
-      bg = `radial-gradient(circle at top, var(--bg-snow-warm-2), var(--bg-snow-warm-1), #020617)`;
-    } else {
-      bg = `radial-gradient(circle at top, #1f2937, #020617)`;
-    }
+    bg = `radial-gradient(circle at top, var(--bg-snow-2), var(--bg-snow-1))`;
   } else {
-    if (tempMode === "cold") {
-      bg = `radial-gradient(circle at top, var(--bg-dusk-cold-2), var(--bg-dusk-cold-1), #020617)`;
-    } else if (tempMode === "warm") {
-      bg = `radial-gradient(circle at top, var(--bg-dusk-warm-2), var(--bg-dusk-warm-1), #020617)`;
-    } else {
-      bg = `radial-gradient(circle at top, #7c2d12, #1e1b4b)`;
-    }
+    bg = `radial-gradient(circle at top, var(--bg-dusk-2), var(--bg-dusk-1))`;
   }
-
-  const storyPages = [
-    {
-      title: "冬夜小故事 · 1",
-      sub: "“太晚了，还不回去吗？”",
-      lines: [
-        { who: "舍友", text: "外面风超大，你今晚还要在自习室待多久？" },
-        { who: "你", text: "再看一眼题目就走，马上就回去了。" },
-        { who: "旁白", text: "站起来的时候，你发现手机上多了一条消息——" },
-        { who: "消息", text: "『到宿舍记得回我，说一声你安全到啦。』" }
-      ]
-    },
-    {
-      title: "冬夜小故事 · 2",
-      sub: "“手机的光，比路灯还亮一点。”",
-      lines: [
-        { who: "旁白", text: "你把围巾拉高了一点，呼出来的白气在冷空气里消散。" },
-        { who: "路灯", text: "昏黄的光落在雪地上，像被人轻轻涂开的橘色颜料。" },
-        { who: "你", text: "不知怎么的，刚才那条消息在脑子里循环播放。" },
-        { who: "心里", text: "原来有人在意你今晚有没有好好到家，这件事本身，就已经很暖了。" }
-      ]
-    },
-    {
-      title: "冬夜小故事 · 3",
-      sub: "“总会有人，把你当成一件需要小心收好的东西。”",
-      lines: [
-        { who: "你", text: "到宿舍了，刚洗完手。今天风真挺大的。" },
-        { who: "对方", text: "好，早点休息，别熬太晚。晚安～" },
-        { who: "旁白", text: "你把手机屏幕扣在桌上，房间的灯也一点点暗下来。" },
-        { who: "旁白", text: "窗外还是很冷，但你突然觉得，这个冬天，好像也没有那么难熬。" }
-      ]
-    }
-  ];
-  const currentStory = storyPages[storyIndex];
 
   return (
     <>
-      {/* 光标光晕 */}
-      <div className="cursor-glow" ref={glowRef} />
-
-      {/* Canvas 雪花 */}
-      <canvas ref={canvasRef} className="snow-canvas" />
-
       {/* 烟雾层 */}
-      <div className="smoke-layer" ref={smokeLayerRef}>
+      <div className="smoke-layer" ref={smokeRef}>
         <div className="smoke-cloud" />
         <div className="smoke-cloud smoke-2" />
       </div>
 
-      {/* 主容器 */}
       <div className="app" style={{ background: bg, filter: moodFilter }}>
+        {/* 顶栏 */}
         <div className="top-bar">
           <div className="logo-block">
             <div className="logo-mark" />
             <div>
-              <div className="logo-text-main">Winter Glow</div>
-              <div className="logo-text-sub">冬天给予温暖 · UI 体验实验</div>
+              <div className="logo-text-main">Winter Glow 2.0</div>
+              <div className="logo-text-sub">冬天给予温暖 · 天气 & 日历 & 粒子光球</div>
             </div>
           </div>
 
           <div className="top-right">
-            <span className="small-text">{sceneLabel}</span>
+            <div className="top-badge">
+              <span className="dot-live" />
+              <span>{sceneLabel}</span>
+            </div>
             <button
               className="glass-btn small"
-              onClick={() => { setShowStory(true); setStoryIndex(0); }}
+              onClick={() => setMusicOn(v => !v)}
             >
-              <span className="dot-live" />
-              打开多页冬夜故事
+              {musicOn ? "🔊 关闭浪漫 BGM" : "🎧 打开浪漫 BGM"}
             </button>
           </div>
         </div>
 
-        {/* 上方原有特效区域 */}
-        <div className="content">
-          <div className="left">
+        {/* 上半：文案 + 光球 */}
+        <div className="hero">
+          <div className="hero-left">
             <div className="tag-line">
-              冬日 · 情绪 · 光的实验性页面
-              <span className="tag-pill">winter · warm · react + three.js</span>
+              冬夜 · 天气 · 情绪实验空间
+              <span className="tag-pill">react · three.js · qweather</span>
             </div>
-
             <div className="title">
-              让<span className="t-cold">最冷的夜</span>，<br />
-              也因为<span className="t-warm">一点点微光</span>而变得柔软。
+              让<span className="t-cold">真实的天气</span>，<br />
+              也能为<span className="t-warm">这个冬天的情绪</span>提供一点参考。
             </div>
-
             <div className="subtitle">
-              有时候，你需要的不是整座城市的灯火，而是
-              <strong>一束橘黄色的光</strong>、<strong>一口热气</strong>，
-              或者来自很远很远的一句：“晚上记得多穿一点。”<br />
-              这个页面尝试把那种被世界轻轻接住的感觉，做成可以点亮和调节的界面。
+              左侧是你所在的实时天气 + 未来 <strong>3 天</strong> 温度变化，
+              背景会随着体感温度自动在冷色 / 中性色 / 暖色之间轻轻偏移。<br />
+              右侧是一个装着无数粒子的光球，代表这个季节里
+              <strong>所有被好好接住的瞬间</strong>：有人问你到家了没、有人提醒你多穿衣服，
+              或者你自己替自己泡了一杯热饮。
             </div>
 
-            <div className="button-row">
-              <button className="glass-btn" onClick={() => setScene("night")}>🌌 黑夜场景</button>
-              <button className="glass-btn" onClick={() => setScene("snow")}>❄️ 雪夜场景</button>
-              <button className="glass-btn" onClick={() => setScene("dusk")}>🌇 黄昏场景</button>
-            </div>
-
-            <div className="button-row">
-              <button className="glass-btn small" onClick={() => setSnowOn(v => !v)}>
-                {snowOn ? "⛅ 暂停飘雪" : "❄️ 开启飘雪"}
-              </button>
-              <button className="glass-btn small" onClick={() => setBreatheOn(v => !v)}>
-                {breatheOn ? "💤 关闭呼吸光" : "✨ 开启呼吸光"}
-              </button>
-              <button className="glass-btn small" onClick={() => setMusicOn(v => !v)}>
-                {musicOn ? "🔇 关闭氛围音乐" : "🎧 打开氛围音乐"}
-              </button>
+            <div className="hero-buttons">
+              <button className="glass-btn small" onClick={() => setScene("night")}>🌌 黑夜场景</button>
+              <button className="glass-btn small" onClick={() => setScene("snow")}>❄️ 雪夜场景</button>
+              <button className="glass-btn small" onClick={() => setScene("dusk")}>🌇 黄昏场景</button>
             </div>
 
             <div className="mood-row">
@@ -1546,109 +1318,67 @@ function WinterGlowApp() {
 
             <div className="hint-text">
               <span className="hint-badge">小提示</span>
-              建议静静盯着球体 15 秒，看粒子在内部缓慢旋转，
-              像一团永远不会熄灭的小太阳。
+              建议慢慢滑动心情滑杆，看看光球和背景在你眼前一点点变色。
+              这不是在控制世界的天气，只是在帮你为今天找一个合适的色温。
+            </div>
+            <div className="music-status">
+              <span className={musicOn ? "music-dot-on" : ""}></span>
+              <span>{musicOn ? "BGM 已开启：冬夜浪漫钢琴循环中" : "点击右上角按钮，可以为这个页面加一点背景音乐"}</span>
             </div>
           </div>
 
-          <div className="right">
-            <div className="orb-wrapper" ref={orbWrapperRef}>
-              <div className={`orb ${breatheOn ? "orb-breathe" : ""}`} ref={orbRef}>
-                <div className="orb-three-layer" ref={threeMountRef} />
+          <div className="hero-right">
+            <div className="orb-wrapper" ref={orbWrapRef}>
+              <div className={`orb ${!mobile ? "orb-breathe" : ""}`} ref={orbRef}>
+                <div className="orb-three-layer" ref={orbThreeRef} />
               </div>
               <div className="dot-cloud" />
               <div className="dot-ring" />
               <div className="orb-card">
                 <div className="orb-card-title">
                   冬夜温度档案
-                  <span className="orb-card-badge">暖区</span>
+                  <span className="orb-card-badge">
+                    {tempMode === "cold" ? "冷区" : tempMode === "warm" ? "暖区" : "中性"}
+                  </span>
                 </div>
                 <div className="orb-card-temp">
-                  体感温度：动态来自天气接口
-                  {feelsLike != null && ` · 当前 ${feelsLike.toFixed(0)}°C`}
+                  体感温度：
+                  {feelsLike != null ? `${feelsLike.toFixed(0)}°C` : "等待天气接口返回中…"}
                 </div>
                 <div>
-                  来源：热饮 / 棉被 / 屏幕前认真看完这行字的你。
+                  来源：热饮 / 棉被 / 屏幕前认真看完这段文字的你。这个光球只负责提醒，
+                  冬天也可以慢慢被点亮。
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {/* 新增：天气 + 日历区块 */}
-        <WeatherAndCalendar onFeelsLikeChange={setFeelsLike} />
+        {/* 天气 + 日历 */}
+        <div className="panel-grid">
+          <WeatherPanel onFeelsLikeChange={setFeelsLike} />
+          <CalendarPanel />
+        </div>
 
-        {/* 下方文字说明 */}
+        {/* 下方说明文字 */}
         <div className="story-scroll">
           有时候我们会觉得，冬天是漫长、冷、难熬的。其实很多记忆，
-          都发生在这样的季节里：第一次熬夜赶项目、第一次和朋友凌晨
-          去便利店买热饮、第一次意识到“原来有人会在我回寝室的时候等一条消息”。<br /><br />
-          你可以把这个页面当成一个小小的、不会打扰别人的冬夜实验室：
-          调整场景、改改心情滑杆、关掉或打开音乐，再看看下面的天气和日历，
+          都发生在这样的季节里：第一次熬夜赶项目、第一次和朋友凌晨去便利店买热饮、
+          第一次意识到“原来有人会在我回寝室的时候等一条消息”。<br /><br />
+          你可以把这个页面当成一个小小的、不太打扰别人的冬夜实验室：
+          挑一个场景、调一下心情滑杆、关掉或打开音乐，再看看下面这几天的天气和日历，
           想一想接下来几天要做的事。<br />
-          当你某天刷到这里，哪怕只是停留几秒，也许就够了。
+          当你某天刷到这里，哪怕只是停留几秒，也许就足够了。
           <div className="footer-note">
-            提示：节假日示例按 2025 部分日期手动配置，只用于演示，你可以在代码中继续补全部分年份的节假日表。
+            提示：节假日示例按 2025 部分日期手动配置，只用于演示；你可以在代码中继续补全部分年份的节假日表。
           </div>
         </div>
       </div>
-
-      {/* 多页故事弹窗 */}
-      {showStory && (
-        <div className="modal-backdrop" onClick={() => setShowStory(false)}>
-          <div className="modal" onClick={e => e.stopPropagation()}>
-            <div className="modal-title">{currentStory.title}</div>
-            <div className="modal-sub">{currentStory.sub}</div>
-            <div className="modal-body">
-              {currentStory.lines.map((line, idx) => (
-                <div className="dialog-line" key={idx}>
-                  <span className="dialog-speaker">[{line.who}]</span>
-                  <span>{line.text}</span>
-                </div>
-              ))}
-            </div>
-            <div className="modal-footer">
-              <div className="progress-dots">
-                {storyPages.map((_, idx) => (
-                  <div
-                    key={idx}
-                    className={`dot ${idx === storyIndex ? "active" : ""}`}
-                  />
-                ))}
-              </div>
-              <div className="modal-btn-row">
-                <button
-                  className="glass-btn small"
-                  disabled={storyIndex === 0}
-                  onClick={() => setStoryIndex(i => Math.max(0, i - 1))}
-                >
-                  ◀ 上一页
-                </button>
-                {storyIndex < storyPages.length - 1 ? (
-                  <button
-                    className="glass-btn small"
-                    onClick={() => setStoryIndex(i => Math.min(storyPages.length - 1, i + 1))}
-                  >
-                    下一页 ▶
-                  </button>
-                ) : (
-                  <button
-                    className="glass-btn small"
-                    onClick={() => setShowStory(false)}
-                  >
-                    读完啦 · 关掉
-                  </button>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   );
 }
 
-ReactDOM.createRoot(document.getElementById("root")).render(<WinterGlowApp />);
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
 </script>
 </body>
 </html>
